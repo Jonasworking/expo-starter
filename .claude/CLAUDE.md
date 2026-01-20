@@ -1,4 +1,4 @@
-# Ultracite Code Standards
+# Guidelines
 
 This project uses **Ultracite**, a zero-config preset that enforces strict code quality standards through automated formatting and linting.
 
@@ -97,10 +97,6 @@ Write code that is **accessible, performant, type-safe, and maintainable**. Focu
 
 - Use ref as a prop instead of `React.forwardRef`
 
-**Solid/Svelte/Vue/Qwik:**
-
-- Use `class` and `for` attributes (not `className` or `htmlFor`)
-
 ---
 
 ## Testing
@@ -124,3 +120,28 @@ Biome's linter will catch most issues automatically. Focus your attention on:
 ---
 
 Most formatting and common issues are automatically fixed by Biome. Run `bun x ultracite fix` before committing to ensure compliance.
+
+## Colocation & Naming
+
+**Philosophy**: Structure code so deleting a folder cleanly removes a feature. If you must hunt through scattered files, the structure is wrong.
+
+**Folder structure**:
+
+- Each feature folder is self-contained; can have local `components/`, `lib/`, `hooks/` when complex enough
+- Main orchestration file named after folder (`feature/feature.ts` not `feature/index.ts`)
+- Sub-features nest inside parent (`feature/sub-feature/sub-feature.ts`)
+- Shared code hoists to lowest common ancestor (if A and B need it, put in their parent)
+
+**File-level colocation**:
+
+- Types, constants, helpers live in the file that **owns** the concept (source of truth)
+- Even if used by multiple files, keep it in the owner; others import from there
+- Separate shared file only when there's no clear owner (truly generic utilities)
+- Ask: "which file is the source of truth for this?" not "how many files use it?"
+- Example: `Button` exports `DEFAULT_VARIANT`; consumers import it from `Button`, not from a `constants.ts`
+
+**Naming**:
+
+- No barrel/index files; import directly from source
+- Short contextual names within folders (folder provides context): `match.ts` not `match-cached-result.ts`
+- Folder names describe the feature, file names describe the specific concern
