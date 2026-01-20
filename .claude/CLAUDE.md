@@ -104,6 +104,23 @@ Write code that is **accessible, performant, type-safe, and maintainable**. Focu
 - When using a new collection, add it to `collections` array in `apps/native/metro.config.js` and restart Metro
 - Current collections: `solar`
 
+**Fonts (expo-font):**
+
+- Use Google Fonts when available: `@expo-google-fonts/inter`, etc.
+- HeroUI Native requires 3 weights: Regular (400), Medium (500), SemiBold (600)
+- Load fonts with `useFonts` hook, render null/splash until loaded
+- Configure in `global.css` under `@theme` (names must exactly match loaded font names):
+
+  ```css
+  @theme {
+    --font-normal: 'Inter_400Regular';
+    --font-medium: 'Inter_500Medium';
+    --font-semibold: 'Inter_600SemiBold';
+  }
+  ```
+
+- React Native has no dynamic font weights - each weight needs its own font file
+
 ---
 
 ## Testing
