@@ -16,6 +16,8 @@
     "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5",
+    "@monicon/metro": "^1.2.2",
+    "@monicon/native": "^1.2.2",
     "@react-navigation/drawer": "^7.3.9",
     "@react-navigation/elements": "^2.8.1",
     "dotenv": "catalog:",
@@ -48,6 +50,7 @@
   },
   "devDependencies": {
     "@expo-starter/config": "workspace:*",
+    "@iconify/json": "^2.2.430",
     "@types/node": "^24.10.0",
     "@types/react": "~19.1.0",
     "typescript": "catalog:"

@@ -97,6 +97,13 @@ Write code that is **accessible, performant, type-safe, and maintainable**. Focu
 
 - Use ref as a prop instead of `React.forwardRef`
 
+**Monicon (Icons):**
+
+- Usage: `<Monicon name="collection:icon-name" size={24} color="#000" />` from `@monicon/native`
+- Browse icons at [icones.js.org](https://icones.js.org/) - copy the `collection:name` format
+- When using a new collection, add it to `collections` array in `apps/native/metro.config.js` and restart Metro
+- Current collections: `solar`
+
 ---
 
 ## Testing

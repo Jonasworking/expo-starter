@@ -1,12 +1,17 @@
 const { getDefaultConfig } = require("expo/metro-config");
 const { withUniwindConfig } = require("uniwind/metro");
+const { withMonicon } = require("@monicon/metro");
 
 /** @type {import('expo/metro-config').MetroConfig} */
-const config = getDefaultConfig(__dirname);
+let config = getDefaultConfig(__dirname);
 
-const uniwindConfig = withUniwindConfig(config, {
+config = withUniwindConfig(config, {
   cssEntryFile: "./global.css",
   dtsFile: "./uniwind-types.d.ts",
 });
 
-module.exports = uniwindConfig;
+config = withMonicon(config, {
+  collections: ["solar"],
+});
+
+module.exports = config;

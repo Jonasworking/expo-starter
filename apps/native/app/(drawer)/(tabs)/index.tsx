@@ -1,3 +1,4 @@
+import { Monicon } from "@monicon/native";
 import { Card } from "heroui-native";
 import { View } from "react-native";
 
@@ -9,6 +10,7 @@ export default function Home() {
       <View className="flex-1 items-center justify-center">
         <Card className="items-center p-8" variant="secondary">
           <Card.Title className="mb-2 text-3xl">Tab One</Card.Title>
+          <Monicon name="solar:bolt-bold" />
         </Card>
       </View>
     </Container>
