@@ -1,0 +1,37 @@
+{
+  "name": "expo-starter",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.2.2",
+      "zod": "^4.1.13",
+      "typescript": "^5"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:native": "turbo -F native dev",
+    "dev:web": "turbo -F web dev"
+  },
+  "dependencies": {
+    "@expo-starter/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.11",
+    "@expo-starter/config": "workspace:*",
+    "lefthook": "latest",
+    "turbo": "^2.6.3",
+    "typescript": "catalog:",
+    "ultracite": "7.0.11"
+  },
+  "packageManager": "bun@1.2.22"
+}
