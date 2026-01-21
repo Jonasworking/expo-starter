@@ -113,13 +113,139 @@ Write code that is **accessible, performant, type-safe, and maintainable**. Focu
 
   ```css
   @theme {
-    --font-normal: 'Inter_400Regular';
-    --font-medium: 'Inter_500Medium';
-    --font-semibold: 'Inter_600SemiBold';
+    --font-normal: "Inter_400Regular";
+    --font-medium: "Inter_500Medium";
+    --font-semibold: "Inter_600SemiBold";
   }
   ```
 
 - React Native has no dynamic font weights - each weight needs its own font file
+
+**HeroUI Native (Theming & Colors):**
+
+HeroUI Native uses **Tailwind CSS v4** with **Uniwind** and the **OKLCH color space** for superior color transitions. The theming system differs significantly from shadcn/ui.
+
+_Global CSS Setup:_
+
+```css
+@import "tailwindcss";
+@import "uniwind";
+@import "heroui-native/styles";
+
+@source "./node_modules/heroui-native/lib";
+
+/* Font configuration Example */
+@theme {
+  --font-normal: 'Inter_400Regular';
+  --font-medium: 'Inter_500Medium';
+  --font-semibold: 'Inter_600SemiBold';
+
+  /* Base radius */
+  --radius: 0.5rem;
+}
+}
+
+/* Color customization (optional) */
+@layer theme {
+  @variant light {
+    --accent: #818cf8;
+    --accent-foreground: #ffffff;
+    ...
+  }
+  @variant dark {
+    --accent: #818cf8;
+    --accent-foreground: #ffffff;
+    ...
+  }
+}
+```
+
+_Color Token Naming Convention:_
+
+- Tokens without suffix = backgrounds (e.g., `--accent`)
+- Tokens with `-foreground` = text on that background (e.g., `--accent-foreground`)
+
+_HeroUI Native Token Reference:_
+
+| Category    | Tokens                                                                              |
+| ----------- | ----------------------------------------------------------------------------------- |
+| Base        | `--background`, `--foreground`, `--muted`                                           |
+| Brand       | `--accent`, `--accent-foreground`, `--accent-soft`, `--accent-soft-foreground`      |
+| Surface     | `--surface`, `--surface-foreground`, `--overlay`, `--overlay-foreground`            |
+| Status      | `--success`, `--warning`, `--danger` (each with `-foreground`)                      |
+| Form Fields | `--field-background`, `--field-foreground`, `--field-placeholder`, `--field-border` |
+| UI Elements | `--default`, `--default-foreground`, `--border`, `--divider`, `--focus`, `--link`   |
+| Constants   | `--white`, `--black`, `--snow`, `--eclipse`                                         |
+
+_shadcn/ui → HeroUI Native Token Translation:_
+
+When receiving shadcn/ui tokens, translate them to HeroUI equivalents:
+
+| shadcn/ui Token            | HeroUI Native Token       | Notes                                 |
+| -------------------------- | ------------------------- | ------------------------------------- |
+| `--primary`                | `--accent`                | Main brand color                      |
+| `--primary-foreground`     | `--accent-foreground`     |                                       |
+| `--secondary`              | `--default`               | Or `--accent-soft` for softer variant |
+| `--secondary-foreground`   | `--default-foreground`    |                                       |
+| `--destructive`            | `--danger`                | Error/destructive actions             |
+| `--destructive-foreground` | `--danger-foreground`     |                                       |
+| `--card`                   | `--surface`               | Card backgrounds                      |
+| `--card-foreground`        | `--surface-foreground`    |                                       |
+| `--popover`                | `--overlay`               | Modal/popover backgrounds             |
+| `--popover-foreground`     | `--overlay-foreground`    |                                       |
+| `--muted`                  | `--default`               | Muted backgrounds                     |
+| `--muted-foreground`       | `--muted`                 | HeroUI uses `--muted` for text        |
+| `--input`                  | `--field-background`      | Form input backgrounds                |
+| `--ring`                   | `--focus`                 | Focus ring color                      |
+| `--border`                 | `--border` or `--divider` | Use `--divider` for visible lines     |
+
+_Tailwind Class Translation:_
+
+When converting shadcn/ui code, replace class names:
+
+| shadcn/ui Class             | HeroUI Native Class       |
+| --------------------------- | ------------------------- |
+| `bg-primary`                | `bg-accent`               |
+| `text-primary`              | `text-accent`             |
+| `bg-primary-foreground`     | `bg-accent-foreground`    |
+| `text-primary-foreground`   | `text-accent-foreground`  |
+| `bg-secondary`              | `bg-default`              |
+| `text-secondary`            | `text-default`            |
+| `bg-secondary-foreground`   | `bg-default-foreground`   |
+| `text-secondary-foreground` | `text-default-foreground` |
+| `bg-destructive`            | `bg-danger`               |
+| `text-destructive`          | `text-danger`             |
+| `bg-card`                   | `bg-surface`              |
+| `text-card-foreground`      | `text-surface-foreground` |
+| `bg-popover`                | `bg-overlay`              |
+| `text-popover-foreground`   | `text-overlay-foreground` |
+| `text-muted-foreground`     | `text-muted`              |
+| `ring-ring`                 | `ring-focus`              |
+| `border-input`              | `border-field-border`     |
+
+_Adding Custom Colors:_
+
+```css
+@layer theme {
+  @variant light {
+    --info: oklch(0.6 0.15 210);
+  }
+  @variant dark {
+    --info: oklch(0.7 0.12 210);
+  }
+}
+
+@theme inline {
+  --color-info: var(--info);
+}
+```
+
+_Programmatic Access:_
+
+```tsx
+import { useThemeColor } from "heroui-native";
+const { accent, success } = useThemeColor(["accent", "success"]);
+```
 
 ---
 
