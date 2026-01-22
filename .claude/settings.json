@@ -2,11 +2,21 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
             "type": "command",
-            "command": "bun x ultracite fix"
+            "command": "jq -r '.tool_input.file_path' | { read file_path; if echo \"$file_path\" | grep -qE '\\.(js|ts|cjs|mjs|d\\.cts|d\\.mts|jsx|tsx|json|jsonc|css)$'; then pnpm exec biome format --write --files-ignore-unknown=true \"$file_path\"; fi; }"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm exec biome check --write --diagnostic-level=error --no-errors-on-unmatched --files-ignore-unknown=true ."
           }
         ]
       }
