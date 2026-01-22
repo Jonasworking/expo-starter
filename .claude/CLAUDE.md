@@ -183,14 +183,44 @@ On **React Native with Uniwind**, fonts are 1-dimensional:
 
 **Theming & Colors (Uniwind + Tailwind v4):**
 
-This project uses **Uniwind** (Tailwind CSS for React Native) with **Tailwind v4** syntax. Theme colors are defined as CSS variables in [global.css](apps/native/global.css).
+This project uses **Uniwind** (Tailwind CSS for React Native) with **Tailwind v4** syntax. Theme colors are defined in [global.css](apps/native/global.css).
 
 **IMPORTANT - Uniwind differs from standard Tailwind v4 web:**
 
 - **Always use `@theme {`** - NEVER use `@theme inline {`. Uniwind requires the non-inline syntax.
-- Color mappings use `--color-*` prefix to create Tailwind utilities (e.g., `--color-primary` enables `bg-primary`, `text-primary`)
+- **Colors go DIRECTLY in `@layer theme` variants** with `--color-*` prefix (NOT in `@theme` with var() indirection)
 - Fonts are 1-dimensional (see Fonts section above)
 - When porting Tailwind v4 web references, carefully adapt for these differences
+
+**CRITICAL - Color Definition Pattern:**
+
+Do NOT use var() indirection for colors in `@theme`. Instead, define colors directly with `--color-*` prefix inside `@layer theme` variants:
+
+```css
+/* ❌ WRONG - causes resolution issues in React Native */
+@theme {
+  --color-primary: var(--primary);
+}
+@layer theme {
+  :root {
+    @variant light {
+      --primary: #15aeed;
+    }
+  }
+}
+
+/* ✅ CORRECT - direct color definitions */
+@theme {
+  /* Only fonts and radius here - NO colors */
+}
+@layer theme {
+  :root {
+    @variant light {
+      --color-primary: #15aeed;  /* Direct --color-* definition */
+    }
+  }
+}
+```
 
 _Global CSS Structure:_
 
@@ -200,17 +230,14 @@ _Global CSS Structure:_
 
 /* IMPORTANT: Use @theme, NOT @theme inline */
 @theme {
-  /* Map CSS variables to Tailwind color utilities */
-  --color-primary: var(--primary);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
 
   /* Fonts (each is a complete font file with family + weight) */
   --font-normal: "Nunito_400Regular";
   --font-bold: "Nunito_700Bold";
   --font-mono: "JetBrainsMono_400Regular";
 
-  /* Radius tokens */
+  /* Radius tokens (can use var() for these) */
+  --radius: 1rem;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
 }
@@ -218,14 +245,19 @@ _Global CSS Structure:_
 @layer theme {
   :root {
     @variant light {
-      --background: #ffffff;
-      --foreground: #000000;
-      --primary: #7c3aed;
+      /* Colors defined DIRECTLY with --color-* prefix */
+      --color-background: #ffffff;
+      --color-foreground: #09090b;
+      --color-primary: #15aeed;
+      --color-card: #f4f4f5;
+      /* ... other colors */
     }
     @variant dark {
-      --background: #0a0518;
-      --foreground: #ffffff;
-      --primary: #7c3aed;
+      --color-background: #09090b;
+      --color-foreground: #fafafa;
+      --color-primary: #15aeed;
+      --color-card: #18181b;
+      /* ... other colors */
     }
   }
 }

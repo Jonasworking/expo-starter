@@ -7,37 +7,18 @@
  * IMPORTANT: Always use `@theme {` (NOT `@theme inline {`).
  * Uniwind requires the non-inline syntax to properly process theme variables.
  *
- * This differs from standard Tailwind v4 web configuration in several ways:
+ * COLOR STRUCTURE:
+ * - Colors are defined DIRECTLY with `--color-*` prefix inside `@layer theme` variants
+ * - This creates Tailwind utilities (e.g., `--color-primary` → `bg-primary`, `text-primary`)
+ * - Do NOT use var() indirection (e.g., `--color-primary: var(--primary)`) as it causes
+ *   resolution issues in React Native
+ *
+ * FONT STRUCTURE:
  * - Fonts are 1-dimensional: each --font-* includes both family AND weight
  * - Primary font family → standard utilities (font-normal, font-bold, etc.)
- * - Secondary families → weight variants (font-heading-bold, font-heading-normal)
- * - Color mappings use --color-* prefix to create Tailwind utilities
- * - Radius tokens use calc() with a base --radius variable
+ * - Secondary families → weight variants (font-heading, font-heading-black)
  */
 @theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
 
   /* PRIMARY FONT (Nunito) - standard weight utilities */
   --font-light: "Nunito_300Light";
@@ -53,6 +34,8 @@
   --font-heading-bold: "Recursive_700Bold";
   --font-mono: "JetBrainsMono_400Regular";
 
+  /* Radius tokens */
+  --radius: 1rem;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -62,57 +45,57 @@
 @layer theme {
   :root {
     @variant light {
-      --background: #435be6;
-      --foreground: #ffffff;
-      --primary: #ffffff;
-      --primary-foreground: #302bfe;
-      --secondary: #2f2c79;
-      --secondary-foreground: #ffffff;
-      --muted: #1a1699;
-      --muted-foreground: #b3b3f7;
-      --accent: #dff16e;
-      --accent-foreground: #0a0845;
-      --destructive: #ff3366;
-      --card: #3632b4;
-      --card-foreground: #ffffff;
-      --popover: #14116a;
-      --popover-foreground: #ffffff;
-      --border: #4a46ff;
-      --input: #1a1699;
-      --ring: #dff16e;
-      --chart-1: #dff16e;
-      --chart-2: #00ffff;
-      --chart-3: #ffffff;
-      --chart-4: #ff00cc;
-      --chart-5: #aa00ff;
-      --radius: 2rem;
+      --color-background: #ffffff;
+      --color-foreground: #09090b;
+      --color-primary: #15aeed;
+      --color-primary-foreground: #ffffff;
+      --color-secondary: #f4f4f5;
+      --color-secondary-foreground: #18181b;
+      --color-muted: #f4f4f5;
+      --color-muted-foreground: #71717a;
+      --color-accent: #e0f2fe;
+      --color-accent-foreground: #0369a1;
+      --color-destructive: #ef4444;
+      --color-card: #f4f4f5;
+      --color-card-foreground: #09090b;
+      --color-popover: #ffffff;
+      --color-popover-foreground: #09090b;
+      --color-border: #e4e4e7;
+      --color-input: #e4e4e7;
+      --color-ring: #15aeed;
+      --color-chart-1: #15aeed;
+      --color-chart-2: #3b82f6;
+      --color-chart-3: #60a5fa;
+      --color-chart-4: #93c5fd;
+      --color-chart-5: #bfdbfe;
+      --color-orange-100: #ffedd5;
     }
 
     @variant dark {
-      --background: #435be6;
-      --foreground: #ffffff;
-      --primary: #ffffff;
-      --primary-foreground: #302bfe;
-      --secondary: #2f2c79;
-      --secondary-foreground: #ffffff;
-      --muted: #1a1699;
-      --muted-foreground: #b3b3f7;
-      --accent: #dff16e;
-      --accent-foreground: #0a0845;
-      --destructive: #ff3366;
-      --card: #3632b4;
-      --card-foreground: #ffffff;
-      --popover: #14116a;
-      --popover-foreground: #ffffff;
-      --border: #4a46ff;
-      --input: #1a1699;
-      --ring: #dff16e;
-      --chart-1: #dff16e;
-      --chart-2: #00ffff;
-      --chart-3: #ffffff;
-      --chart-4: #ff00cc;
-      --chart-5: #aa00ff;
-      --radius: 2rem;
+      --color-background: #09090b;
+      --color-foreground: #fafafa;
+      --color-primary: #15aeed;
+      --color-primary-foreground: #ffffff;
+      --color-secondary: #27272a;
+      --color-secondary-foreground: #fafafa;
+      --color-muted: #27272a;
+      --color-muted-foreground: #a1a1aa;
+      --color-accent: #0c4a6e;
+      --color-accent-foreground: #7dd3fc;
+      --color-destructive: #dc2626;
+      --color-card: #18181b;
+      --color-card-foreground: #fafafa;
+      --color-popover: #18181b;
+      --color-popover-foreground: #fafafa;
+      --color-border: #27272a;
+      --color-input: #27272a;
+      --color-ring: #15aeed;
+      --color-chart-1: #15aeed;
+      --color-chart-2: #3b82f6;
+      --color-chart-3: #60a5fa;
+      --color-chart-4: #93c5fd;
+      --color-chart-5: #bfdbfe;
+      --color-orange-100: #431407;
     }
   }
 }
