@@ -40,6 +40,7 @@
   --color-chart-5: var(--chart-5);
 
   /* PRIMARY FONT (Nunito) - standard weight utilities */
+  --font-light: "Nunito_300Light";
   --font-normal: "Nunito_400Regular";
   --font-medium: "Nunito_500Medium";
   --font-semibold: "Nunito_600SemiBold";
@@ -48,7 +49,8 @@
   --font-black: "Nunito_900Black";
 
   /* SECONDARY FONTS - add weight variants if needed (e.g., font-heading-bold) */
-  --font-heading: "Recursive_700Bold";
+  --font-heading-normal: "Recursive_400Regular";
+  --font-heading-bold: "Recursive_700Bold";
   --font-mono: "JetBrainsMono_400Regular";
 
   --radius-sm: calc(var(--radius) - 4px);

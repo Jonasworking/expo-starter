@@ -12,6 +12,9 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo-google-fonts/jetbrains-mono": "^0.4.1",
+    "@expo-google-fonts/nunito": "^0.4.2",
+    "@expo-google-fonts/recursive": "^0.4.2",
     "@expo-starter/env": "workspace:*",
     "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^15.0.3",
@@ -33,6 +36,7 @@
     "expo-network": "~8.0.7",
     "expo-router": "~6.0.14",
     "expo-secure-store": "~15.0.7",
+    "expo-splash-screen": "^31.0.13",
     "expo-status-bar": "~3.0.8",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -57,8 +61,8 @@
     "@iconify/json": "^2.2.430",
     "@types/node": "^24.10.0",
     "@types/react": "~19.1.0",
-    "eta": "^4.5.0",
     "change-case-all": "^2.1.0",
+    "eta": "^4.5.0",
     "typescript": "catalog:"
   }
 }
