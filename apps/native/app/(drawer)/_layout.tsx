@@ -1,16 +1,18 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { Drawer } from "expo-router/drawer";
-import { useThemeColor } from "heroui-native";
 import { useCallback } from "react";
-import { Pressable, Text } from "react-native";
+import { Pressable } from "react-native";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Text } from "@/components/ui/text";
+import { useThemeColor } from "@/lib/theme/use-theme-color";
 
 function DrawerLayout() {
-  const themeColorForeground = useThemeColor("foreground");
-  const themeColorBackground = useThemeColor("background");
-
+  const [themeColorBackground, themeColorForeground] = useThemeColor([
+    "background",
+    "foreground",
+  ]);
   const renderThemeToggle = useCallback(() => <ThemeToggle />, []);
 
   return (

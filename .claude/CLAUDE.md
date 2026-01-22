@@ -4,9 +4,9 @@ This project uses **Ultracite**, a zero-config preset that enforces strict code 
 
 ## Quick Reference
 
-- **Format code**: `bun x ultracite fix`
-- **Check for issues**: `bun x ultracite check`
-- **Diagnose setup**: `bun x ultracite doctor`
+- **Format code**: `pnpm dlx ultracite fix`
+- **Check for issues**: `pnpm dlx ultracite check`
+- **Diagnose setup**: `pnpm dlx ultracite doctor`
 
 Biome (the underlying engine) provides robust linting and formatting. Most issues are automatically fixable.
 
@@ -99,15 +99,36 @@ Write code that is **accessible, performant, type-safe, and maintainable**. Focu
 
 **Monicon (Icons):**
 
-- Usage: `<Monicon name="collection:icon-name" size={24} color="#000" />` from `@monicon/native`
-- Browse icons at [icones.js.org](https://icones.js.org/) - copy the `collection:name` format
-- When using a new collection, add it to `collections` array in `apps/native/metro.config.js` and restart Metro
-- Current collections: `solar`
+Icons are pre-generated as React Native components using `@monicon/core`. Each icon is wrapped with `UniwindSvgXml`, enabling Tailwind className styling directly on the icon.
+
+_Adding a new icon:_
+
+1. Browse icons at [icones.js.org](https://icones.js.org/) - copy the `collection:name` format (e.g., `solar:bolt-bold`)
+2. Add the icon to the `icons` array in [monicon.config.ts](apps/native/monicon.config.ts):
+
+   ```ts
+   icons: ["solar:bolt-bold", "solar:settings-linear", "lucide:check"],
+   ```
+
+3. Start/restart Metro (`pnpm dev` or `pnpm ios`/`pnpm android`) - icons are generated automatically
+4. Icons appear at `apps/native/components/icons/<collection>/<icon-name>.tsx`
+
+_Usage:_
+
+```tsx
+import { BoltBoldIcon } from "@/components/icons/solar/bolt-bold";
+
+// With Tailwind className (UniwindSvgXml enables this)
+<BoltBoldIcon className="size-6 text-primary" />
+```
+
+- Icon components are named in PascalCase with `Icon` suffix (e.g., `solar:bolt-bold` → `BoltBoldIcon`)
+- Icons starting with a digit get an `N` prefix (e.g., `solar:2-bold` → `N2BoldIcon`)
+- Use `className` for sizing and colors instead of props when possible
 
 **Fonts (expo-font):**
 
 - Use Google Fonts when available: `@expo-google-fonts/inter`, etc.
-- HeroUI Native requires 3 weights: Regular (400), Medium (500), SemiBold (600)
 - Load fonts with `useFonts` hook, render null/splash until loaded
 - Configure in `global.css` under `@theme` (names must exactly match loaded font names):
 
@@ -116,138 +137,93 @@ Write code that is **accessible, performant, type-safe, and maintainable**. Focu
     --font-normal: "Inter_400Regular";
     --font-medium: "Inter_500Medium";
     --font-semibold: "Inter_600SemiBold";
+    etc...
   }
   ```
 
 - React Native has no dynamic font weights - each weight needs its own font file
 
-**HeroUI Native (Theming & Colors):**
+**Theming & Colors (Uniwind + Tailwind v4):**
 
-HeroUI Native uses **Tailwind CSS v4** with **Uniwind** and the **OKLCH color space** for superior color transitions. The theming system differs significantly from shadcn/ui.
+This project uses **Uniwind** (Tailwind CSS for React Native) with **Tailwind v4** syntax. Theme colors are defined as CSS variables in [global.css](apps/native/global.css).
 
-_Global CSS Setup:_
+_Global CSS Structure:_
 
 ```css
 @import "tailwindcss";
 @import "uniwind";
-@import "heroui-native/styles";
 
-@source "./node_modules/heroui-native/lib";
-
-/* Font configuration Example */
 @theme {
-  --font-normal: 'Inter_400Regular';
-  --font-medium: 'Inter_500Medium';
-  --font-semibold: 'Inter_600SemiBold';
+  /* Map CSS variables to Tailwind color utilities */
+  --color-primary: var(--primary);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
-  /* Base radius */
-  --radius: 0.5rem;
-}
+  /* Fonts (must match loaded font names exactly) */
+  --font-normal: "Roboto-Regular";
+  --font-medium: "Roboto-Medium";
+
+  /* Radius tokens */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
 }
 
-/* Color customization (optional) */
 @layer theme {
-  @variant light {
-    --accent: #818cf8;
-    --accent-foreground: #ffffff;
-    ...
-  }
-  @variant dark {
-    --accent: #818cf8;
-    --accent-foreground: #ffffff;
-    ...
+  :root {
+    @variant light {
+      --background: #ffffff;
+      --foreground: #000000;
+      --primary: #7c3aed;
+    }
+    @variant dark {
+      --background: #0a0518;
+      --foreground: #ffffff;
+      --primary: #7c3aed;
+    }
   }
 }
 ```
 
-_Color Token Naming Convention:_
-
-- Tokens without suffix = backgrounds (e.g., `--accent`)
-- Tokens with `-foreground` = text on that background (e.g., `--accent-foreground`)
-
-_HeroUI Native Token Reference:_
-
-| Category    | Tokens                                                                              |
-| ----------- | ----------------------------------------------------------------------------------- |
-| Base        | `--background`, `--foreground`, `--muted`                                           |
-| Brand       | `--accent`, `--accent-foreground`, `--accent-soft`, `--accent-soft-foreground`      |
-| Surface     | `--surface`, `--surface-foreground`, `--overlay`, `--overlay-foreground`            |
-| Status      | `--success`, `--warning`, `--danger` (each with `-foreground`)                      |
-| Form Fields | `--field-background`, `--field-foreground`, `--field-placeholder`, `--field-border` |
-| UI Elements | `--default`, `--default-foreground`, `--border`, `--divider`, `--focus`, `--link`   |
-| Constants   | `--white`, `--black`, `--snow`, `--eclipse`                                         |
-
-_shadcn/ui → HeroUI Native Token Translation:_
-
-When receiving shadcn/ui tokens, translate them to HeroUI equivalents:
-
-| shadcn/ui Token            | HeroUI Native Token       | Notes                                 |
-| -------------------------- | ------------------------- | ------------------------------------- |
-| `--primary`                | `--accent`                | Main brand color                      |
-| `--primary-foreground`     | `--accent-foreground`     |                                       |
-| `--secondary`              | `--default`               | Or `--accent-soft` for softer variant |
-| `--secondary-foreground`   | `--default-foreground`    |                                       |
-| `--destructive`            | `--danger`                | Error/destructive actions             |
-| `--destructive-foreground` | `--danger-foreground`     |                                       |
-| `--card`                   | `--surface`               | Card backgrounds                      |
-| `--card-foreground`        | `--surface-foreground`    |                                       |
-| `--popover`                | `--overlay`               | Modal/popover backgrounds             |
-| `--popover-foreground`     | `--overlay-foreground`    |                                       |
-| `--muted`                  | `--default`               | Muted backgrounds                     |
-| `--muted-foreground`       | `--muted`                 | HeroUI uses `--muted` for text        |
-| `--input`                  | `--field-background`      | Form input backgrounds                |
-| `--ring`                   | `--focus`                 | Focus ring color                      |
-| `--border`                 | `--border` or `--divider` | Use `--divider` for visible lines     |
-
-_Tailwind Class Translation:_
-
-When converting shadcn/ui code, replace class names:
-
-| shadcn/ui Class             | HeroUI Native Class       |
-| --------------------------- | ------------------------- |
-| `bg-primary`                | `bg-accent`               |
-| `text-primary`              | `text-accent`             |
-| `bg-primary-foreground`     | `bg-accent-foreground`    |
-| `text-primary-foreground`   | `text-accent-foreground`  |
-| `bg-secondary`              | `bg-default`              |
-| `text-secondary`            | `text-default`            |
-| `bg-secondary-foreground`   | `bg-default-foreground`   |
-| `text-secondary-foreground` | `text-default-foreground` |
-| `bg-destructive`            | `bg-danger`               |
-| `text-destructive`          | `text-danger`             |
-| `bg-card`                   | `bg-surface`              |
-| `text-card-foreground`      | `text-surface-foreground` |
-| `bg-popover`                | `bg-overlay`              |
-| `text-popover-foreground`   | `text-overlay-foreground` |
-| `text-muted-foreground`     | `text-muted`              |
-| `ring-ring`                 | `ring-focus`              |
-| `border-input`              | `border-field-border`     |
-
-_Adding Custom Colors:_
-
-```css
-@layer theme {
-  @variant light {
-    --info: oklch(0.6 0.15 210);
-  }
-  @variant dark {
-    --info: oklch(0.7 0.12 210);
-  }
-}
-
-@theme inline {
-  --color-info: var(--info);
-}
-```
-
-_Programmatic Access:_
+_Accessing theme colors in JS:_
 
 ```tsx
-import { useThemeColor } from "heroui-native";
-const { accent, success } = useThemeColor(["accent", "success"]);
+import { useThemeColor } from "@/lib/theme/use-theme-color";
+
+// Single color
+const primary = useThemeColor("primary");
+
+// Multiple colors (more efficient)
+const [primary, background] = useThemeColor(["primary", "background"]);
 ```
 
----
+Available colors: `background`, `foreground`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `card`, `popover`, `border`, `input`, `ring`, `chart-1` through `chart-5` (and their `-foreground` variants)
+
+**UI Components (React Native Reusables pattern):**
+
+UI primitives are in `apps/native/components/ui/`. Built with `class-variance-authority` for variants and `@rn-primitives` for accessibility.
+
+```tsx
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Text } from "@/components/ui/text";
+
+<Button variant="outline" size="sm">Click me</Button>
+<Card>
+  <CardHeader>
+    <CardTitle>Title</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <Text>Content here</Text>
+  </CardContent>
+</Card>
+```
+
+**IMPORTANT:** Always use `Text` from `@/components/ui/text`, never from `react-native` directly. The custom Text component:
+
+- Supports typography variants: `h1`, `h2`, `h3`, `h4`, `p`, `blockquote`, `code`, `lead`, `large`, `small`, `muted`
+- Inherits styles from parent components via `TextClassContext` (e.g., text inside `Button` automatically gets button text styles)
+- Includes proper accessibility attributes (role, aria-level for headings)
+- Supports `asChild` prop for composition with other components
 
 ## Testing
 
@@ -269,7 +245,7 @@ Biome's linter will catch most issues automatically. Focus your attention on:
 
 ---
 
-Most formatting and common issues are automatically fixed by Biome. Run `bun x ultracite fix` before committing to ensure compliance.
+Most formatting and common issues are automatically fixed by Biome. Run `pnpm dlx ultracite fix` before committing to ensure compliance.
 
 ## Colocation & Naming
 

@@ -1,13 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { Button, Surface, useThemeColor } from "heroui-native";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 import { Container } from "@/components/container";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Text } from "@/components/ui/text";
 
 function Modal() {
-  const accentForegroundColor = useThemeColor("accent-foreground");
-
   function handleClose() {
     router.back();
   }
@@ -15,14 +15,10 @@ function Modal() {
   return (
     <Container>
       <View className="flex-1 items-center justify-center p-4">
-        <Surface className="w-full max-w-sm rounded-lg p-5" variant="secondary">
+        <Card className="w-full max-w-sm rounded-lg p-5">
           <View className="items-center">
             <View className="mb-3 h-12 w-12 items-center justify-center rounded-lg bg-accent">
-              <Ionicons
-                color={accentForegroundColor}
-                name="checkmark"
-                size={24}
-              />
+              <Ionicons color={"black"} name="checkmark" size={24} />
             </View>
             <Text className="mb-1 font-medium text-foreground text-lg">
               Modal Screen
@@ -32,9 +28,9 @@ function Modal() {
             </Text>
           </View>
           <Button className="w-full" onPress={handleClose} size="sm">
-            <Button.Label>Close</Button.Label>
+            <Text>Close</Text>
           </Button>
-        </Surface>
+        </Card>
       </View>
     </Container>
   );

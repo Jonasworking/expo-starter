@@ -10,8 +10,6 @@ config = withUniwindConfig(config, {
   dtsFile: "./uniwind-types.d.ts",
 });
 
-config = withMonicon(config, {
-  collections: ["solar"],
-});
+config = withMonicon(config);
 
 module.exports = config;
