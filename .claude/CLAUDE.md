@@ -99,7 +99,7 @@ Write code that is **accessible, performant, type-safe, and maintainable**. Focu
 
 **Monicon (Icons):**
 
-Icons are pre-generated as React Native components using `@monicon/core`. Each icon is wrapped with `UniwindSvgXml`, enabling Tailwind className styling directly on the icon.
+Icons are pre-generated as React Native components using `monicon`. Each icon is wrapped with `UniwindSvgXml`, enabling Tailwind className styling directly on the icon.
 
 _Adding a new icon:_
 
@@ -110,7 +110,7 @@ _Adding a new icon:_
    icons: ["solar:bolt-bold", "solar:settings-linear", "lucide:check"],
    ```
 
-3. Start/restart Metro (`pnpm dev` or `pnpm ios`/`pnpm android`) - icons are generated automatically
+3. **IMPORTANT** Generate icons: `pnpx @monicon/cli generate`
 4. Icons appear at `apps/native/components/icons/<collection>/<icon-name>.tsx`
 
 _Usage:_
