@@ -126,26 +126,71 @@ import { BoltBoldIcon } from "@/components/icons/solar/bolt-bold";
 - Icons starting with a digit get an `N` prefix (e.g., `solar:2-bold` → `N2BoldIcon`)
 - Use `className` for sizing and colors instead of props when possible
 
-**Fonts (expo-font):**
+**Fonts (expo-font + Uniwind):**
 
-- Use Google Fonts when available: `@expo-google-fonts/inter`, etc.
-- Load fonts with `useFonts` hook, render null/splash until loaded
-- Configure in `global.css` under `@theme` (names must exactly match loaded font names):
+- Use Google Fonts when available: `@expo-google-fonts/nunito`, etc.
+- Load fonts with `useFonts` hook in root layout, render null/splash until loaded
+- Configure in `global.css` under `@theme` (names must exactly match loaded font names)
 
-  ```css
-  @theme {
-    --font-normal: "Inter_400Regular";
-    --font-medium: "Inter_500Medium";
-    --font-semibold: "Inter_600SemiBold";
-    etc...
-  }
-  ```
+**CRITICAL - Fonts work differently in React Native vs Web:**
 
-- React Native has no dynamic font weights - each weight needs its own font file
+On **web Tailwind**, fonts are 2-dimensional:
+
+- `font-sans` sets the font family
+- `font-bold` sets the font weight
+- You combine them: `font-sans font-bold`
+
+On **React Native with Uniwind**, fonts are 1-dimensional:
+
+- Each font definition includes BOTH family AND weight inherently
+- `font-bold` maps to a complete font file like `"Nunito_700Bold"`
+- There is no separate font-family utility
+
+```css
+@theme {
+  /* PRIMARY FONT FAMILY: maps to standard weight utilities */
+  /* Web equivalent: font-sans + font-normal/bold/etc */
+  --font-normal: "Nunito_400Regular";
+  --font-medium: "Nunito_500Medium";
+  --font-semibold: "Nunito_600SemiBold";
+  --font-bold: "Nunito_700Bold";
+  --font-extrabold: "Nunito_800ExtraBold";
+  --font-black: "Nunito_900Black";
+
+  /* SECONDARY FONT FAMILIES: need weight variants if multiple weights used */
+  /* Web equivalent: font-heading + font-bold → font-heading-bold */
+  --font-heading: "Recursive_700Bold";
+  /* If heading needs multiple weights, add: */
+  /* --font-heading-normal: "Recursive_400Regular"; */
+  /* --font-heading-bold: "Recursive_700Bold"; */
+
+  /* Monospace typically only needs one weight */
+  --font-mono: "JetBrainsMono_400Regular";
+}
+```
+
+**When porting web Tailwind designs:**
+
+1. **Primary font family** (e.g., `font-sans`, `font-body`): Map to standard utilities (`font-normal`, `font-bold`, etc.)
+   - Web: `font-sans font-semibold` → Uniwind: `font-semibold`
+
+2. **Secondary font families** (e.g., `font-heading`, `font-display`): Create weight-specific variants
+   - Web: `font-heading font-bold` → Uniwind: `font-heading-bold`
+   - Web: `font-heading font-normal` → Uniwind: `font-heading-normal`
+   - If only one weight is used, a single definition suffices: `font-heading`
+
+3. **Monospace/special fonts**: Usually only need one weight definition
 
 **Theming & Colors (Uniwind + Tailwind v4):**
 
 This project uses **Uniwind** (Tailwind CSS for React Native) with **Tailwind v4** syntax. Theme colors are defined as CSS variables in [global.css](apps/native/global.css).
+
+**IMPORTANT - Uniwind differs from standard Tailwind v4 web:**
+
+- **Always use `@theme {`** - NEVER use `@theme inline {`. Uniwind requires the non-inline syntax.
+- Color mappings use `--color-*` prefix to create Tailwind utilities (e.g., `--color-primary` enables `bg-primary`, `text-primary`)
+- Fonts are 1-dimensional (see Fonts section above)
+- When porting Tailwind v4 web references, carefully adapt for these differences
 
 _Global CSS Structure:_
 
@@ -153,15 +198,17 @@ _Global CSS Structure:_
 @import "tailwindcss";
 @import "uniwind";
 
+/* IMPORTANT: Use @theme, NOT @theme inline */
 @theme {
   /* Map CSS variables to Tailwind color utilities */
   --color-primary: var(--primary);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* Fonts (must match loaded font names exactly) */
-  --font-normal: "Roboto-Regular";
-  --font-medium: "Roboto-Medium";
+  /* Fonts (each is a complete font file with family + weight) */
+  --font-normal: "Nunito_400Regular";
+  --font-bold: "Nunito_700Bold";
+  --font-mono: "JetBrainsMono_400Regular";
 
   /* Radius tokens */
   --radius-sm: calc(var(--radius) - 4px);

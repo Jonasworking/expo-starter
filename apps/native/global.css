@@ -1,6 +1,19 @@
 @import "tailwindcss";
 @import "uniwind";
 
+/*
+ * UNIWIND CONFIGURATION
+ *
+ * IMPORTANT: Always use `@theme {` (NOT `@theme inline {`).
+ * Uniwind requires the non-inline syntax to properly process theme variables.
+ *
+ * This differs from standard Tailwind v4 web configuration in several ways:
+ * - Fonts are 1-dimensional: each --font-* includes both family AND weight
+ * - Primary font family → standard utilities (font-normal, font-bold, etc.)
+ * - Secondary families → weight variants (font-heading-bold, font-heading-normal)
+ * - Color mappings use --color-* prefix to create Tailwind utilities
+ * - Radius tokens use calc() with a base --radius variable
+ */
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -26,13 +39,17 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  /* sans */
-  --font-normal: "Roboto-Regular";
-  --font-medium: "Roboto-Medium";
-  --font-semibold: "Roboto-SemiBold";
-  --font-bold: "Roboto-Bold";
+  /* PRIMARY FONT (Nunito) - standard weight utilities */
+  --font-normal: "Nunito_400Regular";
+  --font-medium: "Nunito_500Medium";
+  --font-semibold: "Nunito_600SemiBold";
+  --font-bold: "Nunito_700Bold";
+  --font-extrabold: "Nunito_800ExtraBold";
+  --font-black: "Nunito_900Black";
 
-  --font-mono: "FiraCode-Regular";
+  /* SECONDARY FONTS - add weight variants if needed (e.g., font-heading-bold) */
+  --font-heading: "Recursive_700Bold";
+  --font-mono: "JetBrainsMono_400Regular";
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -43,69 +60,57 @@
 @layer theme {
   :root {
     @variant light {
-      --background: #0a0518;
+      --background: #435be6;
       --foreground: #ffffff;
-      --primary: #7c3aed;
-      --primary-foreground: #ffffff;
-      --secondary: #2a1f45;
-      --secondary-foreground: #e9d5ff;
-      --muted: #1e1435;
-      --muted-foreground: #9ca3af;
-      --accent: #d946ef;
-      --accent-foreground: #ffffff;
-      --destructive: #ef4444;
-      --card: #120b29;
+      --primary: #ffffff;
+      --primary-foreground: #302bfe;
+      --secondary: #2f2c79;
+      --secondary-foreground: #ffffff;
+      --muted: #1a1699;
+      --muted-foreground: #b3b3f7;
+      --accent: #dff16e;
+      --accent-foreground: #0a0845;
+      --destructive: #ff3366;
+      --card: #3632b4;
       --card-foreground: #ffffff;
-      --popover: #160c2e;
+      --popover: #14116a;
       --popover-foreground: #ffffff;
-      --border: #2e214b;
-      --input: #1e1435;
-      --ring: #7c3aed;
-      --chart-1: #a78bfa;
-      --chart-2: #d946ef;
-      --chart-3: #ff8c42;
-      --chart-4: #38bdf8;
-      --chart-5: #34d399;
-
-      --font-sans: "Instrument Sans";
-      --font-heading: "Space Grotesk";
-      --font-serif: "Playfair Display";
-      --font-mono: "JetBrains Mono";
-
-      --radius: 1rem;
+      --border: #4a46ff;
+      --input: #1a1699;
+      --ring: #dff16e;
+      --chart-1: #dff16e;
+      --chart-2: #00ffff;
+      --chart-3: #ffffff;
+      --chart-4: #ff00cc;
+      --chart-5: #aa00ff;
+      --radius: 2rem;
     }
 
     @variant dark {
-      --background: #0a0518;
+      --background: #435be6;
       --foreground: #ffffff;
-      --primary: #7c3aed;
-      --primary-foreground: #ffffff;
-      --secondary: #2a1f45;
-      --secondary-foreground: #e9d5ff;
-      --muted: #1e1435;
-      --muted-foreground: #9ca3af;
-      --accent: #d946ef;
-      --accent-foreground: #ffffff;
-      --destructive: #ef4444;
-      --card: #120b29;
+      --primary: #ffffff;
+      --primary-foreground: #302bfe;
+      --secondary: #2f2c79;
+      --secondary-foreground: #ffffff;
+      --muted: #1a1699;
+      --muted-foreground: #b3b3f7;
+      --accent: #dff16e;
+      --accent-foreground: #0a0845;
+      --destructive: #ff3366;
+      --card: #3632b4;
       --card-foreground: #ffffff;
-      --popover: #160c2e;
+      --popover: #14116a;
       --popover-foreground: #ffffff;
-      --border: #2e214b;
-      --input: #1e1435;
-      --ring: #7c3aed;
-      --chart-1: #a78bfa;
-      --chart-2: #d946ef;
-      --chart-3: #ff8c42;
-      --chart-4: #38bdf8;
-      --chart-5: #34d399;
-
-      --font-sans: "Instrument Sans";
-      --font-heading: "Space Grotesk";
-      --font-serif: "Playfair Display";
-      --font-mono: "JetBrains Mono";
-
-      --radius: 1rem;
+      --border: #4a46ff;
+      --input: #1a1699;
+      --ring: #dff16e;
+      --chart-1: #dff16e;
+      --chart-2: #00ffff;
+      --chart-3: #ffffff;
+      --chart-4: #ff00cc;
+      --chart-5: #aa00ff;
+      --radius: 2rem;
     }
   }
 }
