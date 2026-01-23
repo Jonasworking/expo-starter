@@ -41,7 +41,7 @@ interface ComponentNameOptions {
 
 const getComponentName = (icon: Icon, options: ComponentNameOptions) => {
   const parsedIcon = parseIcon(icon.name);
-  const componentName = pascalCase(parsedIcon.name);
+  const componentName = pascalCase(parsedIcon.name, {}).replace(/_/g, "");
 
   const prefix =
     typeof options?.prefix === "function"
