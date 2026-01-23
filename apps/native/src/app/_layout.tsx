@@ -13,6 +13,7 @@ import {
   Recursive_400Regular,
   Recursive_700Bold,
 } from "@expo-google-fonts/recursive";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { PortalHost } from "@rn-primitives/portal";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
@@ -32,10 +33,6 @@ function StackLayout() {
   return (
     <Stack screenOptions={{}}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="modal"
-        options={{ title: "Modal", presentation: "modal" }}
-      />
     </Stack>
   );
 }
@@ -68,8 +65,10 @@ export default function Layout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
         <AppThemeProvider>
-          <StackLayout />
-          <PortalHost />
+          <BottomSheetModalProvider>
+            <StackLayout />
+            <PortalHost />
+          </BottomSheetModalProvider>
         </AppThemeProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>
