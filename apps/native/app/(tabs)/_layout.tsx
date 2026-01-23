@@ -1,5 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { useCallback } from "react";
+
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useThemeColor } from "@/lib/theme/use-theme-color";
 
 export default function TabLayout() {
@@ -7,11 +10,11 @@ export default function TabLayout() {
     "background",
     "foreground",
   ]);
+  const renderThemeToggle = useCallback(() => <ThemeToggle />, []);
 
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
         headerStyle: {
           backgroundColor: themeColorBackground,
         },
@@ -20,6 +23,7 @@ export default function TabLayout() {
           color: themeColorForeground,
           fontWeight: "600",
         },
+        headerRight: renderThemeToggle,
         tabBarStyle: {
           backgroundColor: themeColorBackground,
         },
