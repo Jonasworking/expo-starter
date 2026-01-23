@@ -19,7 +19,6 @@
  * - Secondary families → weight variants (font-heading, font-heading-black)
  */
 @theme {
-
   /* PRIMARY FONT (Nunito) - standard weight utilities */
   --font-light: "Nunito_300Light";
   --font-normal: "Nunito_400Regular";

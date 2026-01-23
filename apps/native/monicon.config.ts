@@ -102,7 +102,7 @@ export default {
      * - components/icons
      * - src/components/icons
      */
-    clean({ patterns: ["components/icons"] }),
-    reactNative({ outputPath: "components/icons" }),
+    clean({ patterns: ["src/components/icons"] }),
+    reactNative({ outputPath: "src/components/icons" }),
   ],
 } satisfies MoniconConfig;

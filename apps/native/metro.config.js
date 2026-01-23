@@ -6,8 +6,8 @@ const { withMonicon } = require("@monicon/metro");
 let config = getDefaultConfig(__dirname);
 
 config = withUniwindConfig(config, {
-  cssEntryFile: "./global.css",
-  dtsFile: "./uniwind-types.d.ts",
+  cssEntryFile: "./src/global.css",
+  dtsFile: "./src/uniwind-types.d.ts",
 });
 
 config = withMonicon(config);
