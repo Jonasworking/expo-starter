@@ -13,8 +13,11 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
+    "@expo-google-fonts/lexend": "^0.4.1",
     "@expo-google-fonts/nunito": "^0.4.2",
+    "@expo-google-fonts/playfair-display": "^0.4.2",
     "@expo-google-fonts/recursive": "^0.4.2",
     "@expo-starter/env": "workspace:*",
     "@expo/metro-runtime": "~6.1.2",
@@ -61,6 +64,7 @@
   "devDependencies": {
     "@expo-starter/config": "workspace:*",
     "@iconify/json": "^2.2.430",
+    "@monicon/cli": "^2.0.8",
     "@types/node": "^24.10.0",
     "@types/react": "~19.1.0",
     "change-case-all": "^2.1.0",

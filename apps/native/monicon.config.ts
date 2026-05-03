@@ -93,15 +93,30 @@ const reactNative: MoniconPlugin<ReactNativePluginOptions> = (_options) =>
   });
 
 export default {
-  icons: ["solar:bolt-bold"],
-  // Loads all icons from a single collection
+  icons: [
+    // Solar icons
+    "solar:bolt-bold",
+    "solar:fire-bold",
+    "solar:calendar-minimalistic-bold",
+    "solar:calendar-minimalistic-outline",
+    "solar:user-bold",
+    "solar:shield-check-bold",
+    "solar:crown-bold",
+    // Phosphor icons
+    "ph:check-bold",
+    "ph:dog-fill",
+    "ph:arrow-left",
+    "ph:x",
+    "ph:arrow-up-bold",
+    "ph:check-circle-fill",
+    "ph:bell-bold",
+    "ph:user-circle-bold",
+    "ph:caret-right-bold",
+    "ph:shield-bold",
+    "ph:trash-bold",
+  ],
   collections: [],
   plugins: [
-    /**
-     * change the output path to your project config for example;
-     * - components/icons
-     * - src/components/icons
-     */
     clean({ patterns: ["src/components/icons"] }),
     reactNative({ outputPath: "src/components/icons" }),
   ],

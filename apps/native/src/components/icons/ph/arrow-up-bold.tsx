@@ -1,0 +1,7 @@
+import { UniwindSvgXml, type UniwindSvgXmlProps } from "@/components/ui/uniwind-svg-xml";
+
+export const ArrowUpBoldIcon = (props: Omit<UniwindSvgXmlProps, "xml">) => {
+  const xml = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path fill="currentColor" d="M208.49 120.49a12 12 0 0 1-17 0L140 69v147a12 12 0 0 1-24 0V69l-51.51 51.49a12 12 0 0 1-17-17l72-72a12 12 0 0 1 17 0l72 72a12 12 0 0 1 0 17"/></svg>`;
+
+  return <UniwindSvgXml xml={xml} {...props} />;
+};

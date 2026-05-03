@@ -9,28 +9,30 @@
  *
  * COLOR STRUCTURE:
  * - Colors are defined DIRECTLY with `--color-*` prefix inside `@layer theme` variants
- * - This creates Tailwind utilities (e.g., `--color-primary` → `bg-primary`, `text-primary`)
- * - Do NOT use var() indirection (e.g., `--color-primary: var(--primary)`) as it causes
- *   resolution issues in React Native
+ * - Do NOT use var() indirection for colors as it causes resolution issues in React Native
  *
  * FONT STRUCTURE:
  * - Fonts are 1-dimensional: each --font-* includes both family AND weight
- * - Primary font family → standard utilities (font-normal, font-bold, etc.)
- * - Secondary families → weight variants (font-heading, font-heading-black)
+ * - Primary body font (Inter) → standard utilities (font-normal, font-medium, etc.)
+ * - Heading font (Lexend) → font-heading, font-heading-bold
+ * - Editorial italic (Playfair Display Italic) → font-serif
+ * - Mono → font-mono
  */
 @theme {
-  /* PRIMARY FONT (Nunito) - standard weight utilities */
-  --font-light: "Nunito_300Light";
-  --font-normal: "Nunito_400Regular";
-  --font-medium: "Nunito_500Medium";
-  --font-semibold: "Nunito_600SemiBold";
-  --font-bold: "Nunito_700Bold";
-  --font-extrabold: "Nunito_800ExtraBold";
-  --font-black: "Nunito_900Black";
+  /* PRIMARY: Inter */
+  --font-normal: "Inter_400Regular";
+  --font-medium: "Inter_500Medium";
+  --font-semibold: "Inter_600SemiBold";
+  --font-bold: "Inter_700Bold";
 
-  /* SECONDARY FONTS - add weight variants if needed (e.g., font-heading-bold) */
-  --font-heading-normal: "Recursive_400Regular";
-  --font-heading-bold: "Recursive_700Bold";
+  /* HEADING: Lexend */
+  --font-heading: "Lexend_400Regular";
+  --font-heading-bold: "Lexend_700Bold";
+
+  /* EDITORIAL ITALIC: Playfair Display Italic — for hero/display headings */
+  --font-serif: "PlayfairDisplay_400Regular_Italic";
+
+  /* MONO */
   --font-mono: "JetBrainsMono_400Regular";
 
   /* Radius tokens */
@@ -44,57 +46,57 @@
 @layer theme {
   :root {
     @variant light {
-      --color-background: #ffffff;
-      --color-foreground: #09090b;
-      --color-primary: #15aeed;
+      --color-background: #c1b8a5;
+      --color-foreground: #0a0806;
+      --color-primary: #0a0806;
       --color-primary-foreground: #ffffff;
-      --color-secondary: #f4f4f5;
-      --color-secondary-foreground: #18181b;
-      --color-muted: #f4f4f5;
-      --color-muted-foreground: #71717a;
-      --color-accent: #e0f2fe;
-      --color-accent-foreground: #0369a1;
-      --color-destructive: #ef4444;
-      --color-card: #f4f4f5;
-      --color-card-foreground: #09090b;
+      --color-secondary: #ffffff;
+      --color-secondary-foreground: #0a0806;
+      --color-muted: #e8dcc2;
+      --color-muted-foreground: #6a5a4a;
+      --color-accent: #c24a1e;
+      --color-accent-foreground: #ffffff;
+      --color-destructive: #c24a1e;
+      --color-destructive-foreground: #ffffff;
+      --color-card: #ffffff;
+      --color-card-foreground: #0a0806;
       --color-popover: #ffffff;
-      --color-popover-foreground: #09090b;
-      --color-border: #e4e4e7;
-      --color-input: #e4e4e7;
-      --color-ring: #15aeed;
-      --color-chart-1: #15aeed;
-      --color-chart-2: #3b82f6;
-      --color-chart-3: #60a5fa;
-      --color-chart-4: #93c5fd;
-      --color-chart-5: #bfdbfe;
-      --color-orange-100: #ffedd5;
+      --color-popover-foreground: #0a0806;
+      --color-border: #d0c4ac;
+      --color-input: #e8dcc2;
+      --color-ring: #0a0806;
+      --color-chart-1: #c24a1e;
+      --color-chart-2: #0a0806;
+      --color-chart-3: #6a5a4a;
+      --color-chart-4: #a89684;
+      --color-chart-5: #e8dcc2;
     }
 
     @variant dark {
-      --color-background: #09090b;
-      --color-foreground: #fafafa;
-      --color-primary: #15aeed;
-      --color-primary-foreground: #ffffff;
-      --color-secondary: #27272a;
-      --color-secondary-foreground: #fafafa;
-      --color-muted: #27272a;
-      --color-muted-foreground: #a1a1aa;
-      --color-accent: #0c4a6e;
-      --color-accent-foreground: #7dd3fc;
-      --color-destructive: #dc2626;
-      --color-card: #18181b;
-      --color-card-foreground: #fafafa;
-      --color-popover: #18181b;
-      --color-popover-foreground: #fafafa;
-      --color-border: #27272a;
-      --color-input: #27272a;
-      --color-ring: #15aeed;
-      --color-chart-1: #15aeed;
-      --color-chart-2: #3b82f6;
-      --color-chart-3: #60a5fa;
-      --color-chart-4: #93c5fd;
-      --color-chart-5: #bfdbfe;
-      --color-orange-100: #431407;
+      --color-background: #1c1511;
+      --color-foreground: #f5efe6;
+      --color-primary: #f5efe6;
+      --color-primary-foreground: #1c1511;
+      --color-secondary: #2a1f17;
+      --color-secondary-foreground: #f5efe6;
+      --color-muted: #2a1f17;
+      --color-muted-foreground: #a89684;
+      --color-accent: #c24a1e;
+      --color-accent-foreground: #ffffff;
+      --color-destructive: #e05c2a;
+      --color-destructive-foreground: #ffffff;
+      --color-card: #231913;
+      --color-card-foreground: #f5efe6;
+      --color-popover: #231913;
+      --color-popover-foreground: #f5efe6;
+      --color-border: #3a2a1f;
+      --color-input: #2a1f17;
+      --color-ring: #f5efe6;
+      --color-chart-1: #c24a1e;
+      --color-chart-2: #f5efe6;
+      --color-chart-3: #a89684;
+      --color-chart-4: #6a5a4a;
+      --color-chart-5: #2a1f17;
     }
   }
 }
