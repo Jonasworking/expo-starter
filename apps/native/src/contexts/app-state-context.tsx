@@ -118,6 +118,8 @@ interface AppStateContextType {
   activeTrial: Trial;
   completeOnboarding: () => void;
   completeReflection: (text: string) => void;
+  editReflection: (dateKey: string, text: string) => void;
+  deleteReflection: (dateKey: string) => void;
   completeTrial: () => void;
   sealDay: () => void;
   resetProgress: () => void;
@@ -208,6 +210,38 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         days: {
           ...prev.days,
           [key]: { ...existing, reflected: true, reflectionText: text },
+        },
+      };
+    });
+  }, []);
+
+  const editReflection = useCallback((dateKey: string, text: string) => {
+    setState((prev) => {
+      const existing = prev.days[dateKey];
+      if (!existing) {
+        return prev;
+      }
+      return {
+        ...prev,
+        days: {
+          ...prev.days,
+          [dateKey]: { ...existing, reflectionText: text },
+        },
+      };
+    });
+  }, []);
+
+  const deleteReflection = useCallback((dateKey: string) => {
+    setState((prev) => {
+      const existing = prev.days[dateKey];
+      if (!existing) {
+        return prev;
+      }
+      return {
+        ...prev,
+        days: {
+          ...prev.days,
+          [dateKey]: { ...existing, reflected: false, reflectionText: "" },
         },
       };
     });
@@ -314,6 +348,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       activeTrial,
       completeOnboarding,
       completeReflection,
+      editReflection,
+      deleteReflection,
       completeTrial,
       sealDay,
       resetProgress,
@@ -326,6 +362,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       activeTrial,
       completeOnboarding,
       completeReflection,
+      editReflection,
+      deleteReflection,
       completeTrial,
       sealDay,
       resetProgress,

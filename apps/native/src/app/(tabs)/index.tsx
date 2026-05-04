@@ -1,13 +1,15 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Text } from "@/components/ui/text";
 import { toDateKey, useAppState } from "@/contexts/app-state-context";
 import { ReflectionBottomSheet } from "./reflection-bottom-sheet";
+import { ReflectionDetailSheet } from "./reflection-detail-sheet";
 
 const ROMAN = [
   "I",
@@ -106,9 +108,17 @@ const REFLECTION_PREVIEW_CHARS = 90;
 
 export default function Today() {
   const insets = useSafeAreaInsets();
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const reflectSheetRef = useRef<BottomSheetModal>(null);
+  const detailSheetRef = useRef<BottomSheetModal>(null);
   const sealedNavigatedRef = useRef(false);
-  const { state, activeTrial, completeTrial } = useAppState();
+  const { state, activeTrial, completeTrial, deleteReflection } = useAppState();
+
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [editTarget, setEditTarget] = useState<{
+    key: string;
+    text: string;
+  } | null>(null);
+  const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
 
   const todayKey = toDateKey();
   const todayData = state.days[todayKey];
@@ -129,6 +139,14 @@ export default function Today() {
       .map(([key, day]) => ({ key, text: day.reflectionText }));
   }, [state.days]);
 
+  const selectedReflection = useMemo(
+    () =>
+      selectedKey
+        ? reflectionHistory.find((entry) => entry.key === selectedKey)
+        : undefined,
+    [selectedKey, reflectionHistory]
+  );
+
   useEffect(() => {
     if (daySealed) {
       sealedNavigatedRef.current = false;
@@ -143,8 +161,43 @@ export default function Today() {
   }, [bothDone, daySealed]);
 
   const handleOpenReflection = useCallback(() => {
-    bottomSheetRef.current?.present();
+    setEditTarget(null);
+    reflectSheetRef.current?.present();
   }, []);
+
+  const handleOpenDetail = useCallback((key: string) => {
+    setSelectedKey(key);
+    detailSheetRef.current?.present();
+  }, []);
+
+  const handleEdit = useCallback(() => {
+    if (!selectedReflection) {
+      return;
+    }
+    const target = {
+      key: selectedReflection.key,
+      text: selectedReflection.text,
+    };
+    detailSheetRef.current?.dismiss();
+    setEditTarget(target);
+    setTimeout(() => reflectSheetRef.current?.present(), 250);
+  }, [selectedReflection]);
+
+  const handleAskDelete = useCallback(() => {
+    if (!selectedKey) {
+      return;
+    }
+    detailSheetRef.current?.dismiss();
+    setConfirmDeleteKey(selectedKey);
+  }, [selectedKey]);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (confirmDeleteKey) {
+      deleteReflection(confirmDeleteKey);
+    }
+    setConfirmDeleteKey(null);
+    setSelectedKey(null);
+  }, [confirmDeleteKey, deleteReflection]);
 
   const userInitial = state.userName.charAt(0).toUpperCase();
 
@@ -285,11 +338,18 @@ export default function Today() {
           </View>
 
           {/* Reflection history */}
-          {reflectionHistory.length > 0 && (
-            <View className="flex-col gap-3">
-              <Text className="px-2 font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
-                Past Reflections
-              </Text>
+          <View className="flex-col gap-3">
+            <Text className="px-2 font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+              Past Reflections
+            </Text>
+            {reflectionHistory.length === 0 ? (
+              <View className="items-center rounded-[22px] border border-border border-dashed bg-card px-6 py-8">
+                <Text className="text-center text-[15px] text-muted-foreground leading-relaxed">
+                  Your reflections will appear here.{"\n"}Take a moment to
+                  reflect.
+                </Text>
+              </View>
+            ) : (
               <View className="flex-col overflow-hidden rounded-[22px] border border-border bg-card">
                 {reflectionHistory.map((entry, index) => {
                   const preview =
@@ -298,9 +358,10 @@ export default function Today() {
                       : entry.text;
                   const isLast = index === reflectionHistory.length - 1;
                   return (
-                    <View
-                      className={`flex-col gap-1 px-5 py-4 ${isLast ? "" : "border-border border-b"}`}
+                    <Pressable
+                      className={`flex-col gap-1 px-5 py-4 active:bg-muted/50 ${isLast ? "" : "border-border border-b"}`}
                       key={entry.key}
+                      onPress={() => handleOpenDetail(entry.key)}
                     >
                       <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
                         {formatReflectionDate(entry.key)}
@@ -311,16 +372,39 @@ export default function Today() {
                       >
                         {preview}
                       </Text>
-                    </View>
+                    </Pressable>
                   );
                 })}
               </View>
-            </View>
-          )}
+            )}
+          </View>
         </View>
       </ScrollView>
 
-      <ReflectionBottomSheet ref={bottomSheetRef} />
+      <ReflectionBottomSheet
+        editDateKey={editTarget?.key}
+        initialText={editTarget?.text ?? ""}
+        mode={editTarget ? "edit" : "create"}
+        ref={reflectSheetRef}
+      />
+      <ReflectionDetailSheet
+        dateLabel={
+          selectedReflection ? formatReflectionDate(selectedReflection.key) : ""
+        }
+        onDelete={handleAskDelete}
+        onEdit={handleEdit}
+        ref={detailSheetRef}
+        text={selectedReflection?.text ?? ""}
+      />
+      <ConfirmDialog
+        confirmLabel="Delete"
+        description="This reflection will be permanently removed."
+        destructive
+        onCancel={() => setConfirmDeleteKey(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete reflection?"
+        visible={confirmDeleteKey !== null}
+      />
     </View>
   );
 }
