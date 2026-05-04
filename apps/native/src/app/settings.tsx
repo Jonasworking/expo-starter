@@ -68,7 +68,10 @@ export default function Settings() {
 
         {/* Settings rows */}
         <View className="flex-col overflow-hidden rounded-[22px] border border-border bg-card">
-          <Pressable className="h-16 flex-row items-center justify-between border-border border-b px-6 active:bg-muted/50">
+          <Pressable
+            className="h-16 flex-row items-center justify-between border-border border-b px-6 active:bg-muted/50"
+            onPress={() => router.push("/reminder")}
+          >
             <View className="flex-row items-center gap-3">
               <BellBoldIcon className="size-6 text-foreground" />
               <Text className="font-medium text-base text-foreground">
@@ -76,12 +79,17 @@ export default function Settings() {
               </Text>
             </View>
             <View className="flex-row items-center gap-2">
-              <Text className="text-base text-muted-foreground">08:00</Text>
+              <Text className="text-base text-muted-foreground">
+                {state.reminderTime}
+              </Text>
               <CaretRightBoldIcon className="size-4 text-muted-foreground" />
             </View>
           </Pressable>
 
-          <Pressable className="h-16 flex-row items-center justify-between border-border border-b px-6 active:bg-muted/50">
+          <Pressable
+            className="h-16 flex-row items-center justify-between border-border border-b px-6 active:bg-muted/50"
+            onPress={() => router.push("/edit-profile")}
+          >
             <View className="flex-row items-center gap-3">
               <UserCircleBoldIcon className="size-6 text-foreground" />
               <Text className="font-medium text-base text-foreground">
@@ -91,7 +99,10 @@ export default function Settings() {
             <CaretRightBoldIcon className="size-4 text-muted-foreground" />
           </Pressable>
 
-          <Pressable className="h-16 flex-row items-center justify-between px-6 active:bg-muted/50">
+          <Pressable
+            className="h-16 flex-row items-center justify-between px-6 active:bg-muted/50"
+            onPress={() => router.push("/privacy-policy")}
+          >
             <View className="flex-row items-center gap-3">
               <ShieldBoldIcon className="size-6 text-foreground" />
               <Text className="font-medium text-base text-foreground">

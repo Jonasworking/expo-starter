@@ -37,6 +37,7 @@ interface FenrirData {
 interface AppStateData {
   hasOnboarded: boolean;
   userName: string;
+  reminderTime: string;
   streak: number;
   days: Record<string, DayData>;
   fenrir: FenrirData;
@@ -45,6 +46,7 @@ interface AppStateData {
 const DEFAULT_STATE: AppStateData = {
   hasOnboarded: false,
   userName: "Warrior",
+  reminderTime: "08:00",
   streak: 0,
   days: {},
   fenrir: {
@@ -62,6 +64,8 @@ interface AppStateContextType {
   completeTrial: () => void;
   sealDay: () => void;
   resetProgress: () => void;
+  setUserName: (name: string) => void;
+  setReminderTime: (time: string) => void;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(
@@ -92,6 +96,15 @@ function calculateStreak(days: Record<string, DayData>): number {
   return streak;
 }
 
+function mergeWithDefaults(loaded: Partial<AppStateData>): AppStateData {
+  return {
+    ...DEFAULT_STATE,
+    ...loaded,
+    fenrir: { ...DEFAULT_STATE.fenrir, ...(loaded.fenrir ?? {}) },
+    days: loaded.days ?? {},
+  };
+}
+
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppStateData>(DEFAULT_STATE);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -100,7 +113,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     getItemAsync(STORAGE_KEY)
       .then((json) => {
         if (json) {
-          setState(JSON.parse(json));
+          setState(mergeWithDefaults(JSON.parse(json)));
         }
       })
       .catch((_err) => {
@@ -206,7 +219,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       ...DEFAULT_STATE,
       hasOnboarded: true,
       userName: prev.userName,
+      reminderTime: prev.reminderTime,
     }));
+  }, []);
+
+  const setUserName = useCallback((name: string) => {
+    setState((prev) => ({ ...prev, userName: name }));
+  }, []);
+
+  const setReminderTime = useCallback((time: string) => {
+    setState((prev) => ({ ...prev, reminderTime: time }));
   }, []);
 
   const value = useMemo<AppStateContextType>(
@@ -218,6 +240,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       completeTrial,
       sealDay,
       resetProgress,
+      setUserName,
+      setReminderTime,
     }),
     [
       isLoaded,
@@ -227,6 +251,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       completeTrial,
       sealDay,
       resetProgress,
+      setUserName,
+      setReminderTime,
     ]
   );
 
