@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { Alert, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Avatar } from "@/components/avatar";
 import { ArrowLeftIcon } from "@/components/icons/ph/arrow-left";
 import { BellBoldIcon } from "@/components/icons/ph/bell-bold";
 import { CaretRightBoldIcon } from "@/components/icons/ph/caret-right-bold";
@@ -51,11 +52,12 @@ export default function Settings() {
       <View className="mt-10 flex-col gap-4 px-8">
         {/* Profile card */}
         <View className="mb-4 flex-row items-center gap-4 rounded-[22px] border border-border bg-card p-6">
-          <View className="size-16 items-center justify-center rounded-full bg-primary">
-            <Text className="font-bold text-[22px] text-primary-foreground">
-              {state.userName.charAt(0).toUpperCase()}
-            </Text>
-          </View>
+          <Avatar
+            emojiFontSize={36}
+            letterFontSize={22}
+            name={state.userName}
+            size={64}
+          />
           <View className="flex-col">
             <Text className="font-bold text-[18px] text-foreground">
               {state.userName}
