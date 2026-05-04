@@ -25,12 +25,14 @@ interface DailyPracticesSectionProps {
   practices: DailyPractices;
   virtue: Virtue;
   onTap: (id: PracticeId) => void;
+  dimmedIds?: readonly PracticeId[];
 }
 
 export function DailyPracticesSection({
   practices,
   virtue,
   onTap,
+  dimmedIds = [],
 }: DailyPracticesSectionProps) {
   const rows: PracticeRow[] = [
     {
@@ -77,9 +79,10 @@ export function DailyPracticesSection({
           const done = practices[row.id];
           const isLast = index === rows.length - 1;
           const { Icon } = row;
+          const dimmed = dimmedIds.includes(row.id);
           return (
             <Pressable
-              className={`flex-row items-center gap-4 px-5 py-4 active:bg-muted/50 ${isLast ? "" : "border-border border-b"}`}
+              className={`flex-row items-center gap-4 px-5 py-4 active:bg-muted/50 ${isLast ? "" : "border-border border-b"} ${dimmed ? "opacity-50" : ""}`}
               key={row.id}
               onPress={() => onTap(row.id)}
             >

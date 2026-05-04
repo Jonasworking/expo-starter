@@ -16,6 +16,7 @@ import {
 } from "@/contexts/app-state-context";
 import { DailyPracticesSection } from "./daily-practices";
 import { ReflectionBottomSheet } from "./reflection-bottom-sheet";
+import { CompactReflectionRow, ReflectionPromptCard } from "./reflection-cards";
 import { ReflectionDetailSheet } from "./reflection-detail-sheet";
 
 const ROMAN = [
@@ -60,6 +61,19 @@ function getGreeting() {
     return "good evening.";
   }
   return "good night.";
+}
+
+type TimePeriod = "morning" | "afternoon" | "evening";
+
+function getTimePeriod(): TimePeriod {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) {
+    return "morning";
+  }
+  if (hour >= 12 && hour < 18) {
+    return "afternoon";
+  }
+  return "evening";
 }
 
 function formatReflectionDate(key: string): string {
@@ -109,7 +123,6 @@ function getWeekDays(days: Record<string, { sealed?: boolean }>) {
   });
 }
 
-const REFLECTION_QUESTION = "What is within your control today?";
 const REFLECTION_HISTORY_LIMIT = 5;
 const REFLECTION_PREVIEW_CHARS = 90;
 
@@ -152,9 +165,11 @@ export default function Today() {
   const todayKey = toDateKey();
   const todayData = state.days[todayKey];
   const reflected = Boolean(todayData?.reflected);
+  const eveningReflected = Boolean(todayData?.eveningReflected);
   const trialCompleted = Boolean(todayData?.trialCompleted);
   const daySealed = Boolean(todayData?.sealed);
   const bothDone = reflected && trialCompleted;
+  const period = getTimePeriod();
 
   const weekDays = useMemo(() => getWeekDays(state.days), [state.days]);
 
@@ -223,6 +238,18 @@ export default function Today() {
   const handleOpenMorningReflection = useCallback(() => {
     presentComposer("morning");
   }, [presentComposer]);
+
+  const handleOpenEveningReflection = useCallback(() => {
+    presentComposer("evening");
+  }, [presentComposer]);
+
+  const handleViewToday = useCallback(
+    (kind: ReflectionKind) => {
+      setSelectedId(entryId({ dateKey: todayKey, kind }));
+      detailSheetRef.current?.present();
+    },
+    [todayKey]
+  );
 
   const handlePracticeTap = useCallback(
     (id: PracticeId) => {
@@ -356,34 +383,22 @@ export default function Today() {
 
         {/* Cards */}
         <View className="mt-10 flex-col gap-6 px-8">
-          {/* Morning Reflection card */}
-          <View className="min-h-[280px] flex-col items-center rounded-[22px] bg-foreground p-8">
-            <Text className="mb-auto font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
-              Morning Reflection
-            </Text>
-            <Text className="mb-8 text-center font-heading-bold text-[28px] text-card leading-tight">
-              {REFLECTION_QUESTION}
-            </Text>
-            {reflected ? (
-              <View className="h-12 flex-row items-center gap-2 rounded-full bg-white/20 px-6">
-                <CheckBoldIcon className="size-4 text-white" />
-                <Text className="font-semibold text-[16px] text-white">
-                  Reflected
-                </Text>
-              </View>
-            ) : (
-              <Pressable
-                className="h-12 items-center justify-center rounded-full bg-card px-8 active:scale-95"
-                onPress={handleOpenMorningReflection}
-              >
-                <Text className="font-semibold text-[17px] text-foreground">
-                  Reflect
-                </Text>
-              </Pressable>
-            )}
-          </View>
+          {period === "morning" && (
+            <ReflectionPromptCard
+              done={reflected}
+              kind="morning"
+              onReflect={handleOpenMorningReflection}
+            />
+          )}
+          {period === "evening" && (
+            <ReflectionPromptCard
+              done={eveningReflected}
+              kind="evening"
+              onReflect={handleOpenEveningReflection}
+            />
+          )}
 
-          {/* Trial card */}
+          {/* Trial card — primary focus in afternoon, supporting otherwise */}
           <View className="items-center rounded-[22px] border border-border bg-card p-8">
             <Text className="mb-1 font-heading-bold text-[26px] text-foreground">
               {activeTrial.title}
@@ -414,8 +429,36 @@ export default function Today() {
             )}
           </View>
 
-          {/* Daily practices */}
+          {period === "afternoon" && (
+            <View className="flex-col gap-3">
+              <CompactReflectionRow
+                done={reflected}
+                kind="morning"
+                onReflect={handleOpenMorningReflection}
+                onView={() => handleViewToday("morning")}
+              />
+              <CompactReflectionRow
+                done={eveningReflected}
+                kind="evening"
+                onReflect={handleOpenEveningReflection}
+                onView={() => handleViewToday("evening")}
+              />
+            </View>
+          )}
+
+          {period === "evening" && (
+            <CompactReflectionRow
+              dimmed
+              done={reflected}
+              kind="morning"
+              onReflect={handleOpenMorningReflection}
+              onView={() => handleViewToday("morning")}
+            />
+          )}
+
+          {/* Daily practices — evening row dimmed in morning to signal it's a later step */}
           <DailyPracticesSection
+            dimmedIds={period === "morning" ? ["eveningReflection"] : []}
             onTap={handlePracticeTap}
             practices={todaysPractices}
             virtue={todaysVirtue}
