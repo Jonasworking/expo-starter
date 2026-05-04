@@ -62,9 +62,7 @@ export default function Reminder() {
           </Text>
           <TimeColumn
             label="Minute"
-            onChange={(next) =>
-              setMinute(wrap(next, MINUTE_MIN, MINUTE_MAX + 1))
-            }
+            onChange={(next) => setMinute(wrap(next, MINUTE_MIN, MINUTE_MAX))}
             step={MINUTE_STEP}
             value={minute}
           />
