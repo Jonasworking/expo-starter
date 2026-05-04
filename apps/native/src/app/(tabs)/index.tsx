@@ -7,7 +7,13 @@ import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Text } from "@/components/ui/text";
-import { toDateKey, useAppState } from "@/contexts/app-state-context";
+import {
+  type PracticeId,
+  type ReflectionKind,
+  toDateKey,
+  useAppState,
+} from "@/contexts/app-state-context";
+import { DailyPracticesSection } from "./daily-practices";
 import { ReflectionBottomSheet } from "./reflection-bottom-sheet";
 import { ReflectionDetailSheet } from "./reflection-detail-sheet";
 
@@ -106,19 +112,41 @@ const REFLECTION_QUESTION = "What is within your control today?";
 const REFLECTION_HISTORY_LIMIT = 5;
 const REFLECTION_PREVIEW_CHARS = 90;
 
+interface HistoryEntry {
+  dateKey: string;
+  kind: ReflectionKind;
+  text: string;
+}
+
+const entryId = (entry: { dateKey: string; kind: ReflectionKind }) =>
+  `${entry.dateKey}:${entry.kind}`;
+
 export default function Today() {
   const insets = useSafeAreaInsets();
   const reflectSheetRef = useRef<BottomSheetModal>(null);
   const detailSheetRef = useRef<BottomSheetModal>(null);
   const sealedNavigatedRef = useRef(false);
-  const { state, activeTrial, completeTrial, deleteReflection } = useAppState();
+  const {
+    state,
+    activeTrial,
+    todaysPractices,
+    todaysVirtue,
+    completeTrial,
+    completePractice,
+    deleteReflection,
+  } = useAppState();
 
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editTarget, setEditTarget] = useState<{
-    key: string;
+    dateKey: string;
+    kind: ReflectionKind;
     text: string;
   } | null>(null);
-  const [confirmDeleteKey, setConfirmDeleteKey] = useState<string | null>(null);
+  const [composerKind, setComposerKind] = useState<ReflectionKind>("morning");
+  const [confirmDelete, setConfirmDelete] = useState<{
+    dateKey: string;
+    kind: ReflectionKind;
+  } | null>(null);
 
   const todayKey = toDateKey();
   const todayData = state.days[todayKey];
@@ -129,22 +157,40 @@ export default function Today() {
 
   const weekDays = useMemo(() => getWeekDays(state.days), [state.days]);
 
-  const reflectionHistory = useMemo(() => {
-    return Object.entries(state.days)
-      .filter(
-        ([, day]) => day.reflected && day.reflectionText.trim().length > 0
-      )
-      .sort(([a], [b]) => (a < b ? 1 : -1))
-      .slice(0, REFLECTION_HISTORY_LIMIT)
-      .map(([key, day]) => ({ key, text: day.reflectionText }));
+  const reflectionHistory = useMemo<HistoryEntry[]>(() => {
+    const entries: HistoryEntry[] = [];
+    for (const [key, day] of Object.entries(state.days)) {
+      if (day.reflected && day.reflectionText.trim().length > 0) {
+        entries.push({
+          dateKey: key,
+          kind: "morning",
+          text: day.reflectionText,
+        });
+      }
+      if (day.eveningReflected && day.eveningReflectionText.trim().length > 0) {
+        entries.push({
+          dateKey: key,
+          kind: "evening",
+          text: day.eveningReflectionText,
+        });
+      }
+    }
+    entries.sort((a, b) => {
+      if (a.dateKey !== b.dateKey) {
+        return a.dateKey < b.dateKey ? 1 : -1;
+      }
+      // same day: evening (later) first
+      return a.kind === "evening" ? -1 : 1;
+    });
+    return entries.slice(0, REFLECTION_HISTORY_LIMIT);
   }, [state.days]);
 
   const selectedReflection = useMemo(
     () =>
-      selectedKey
-        ? reflectionHistory.find((entry) => entry.key === selectedKey)
+      selectedId
+        ? reflectionHistory.find((entry) => entryId(entry) === selectedId)
         : undefined,
-    [selectedKey, reflectionHistory]
+    [selectedId, reflectionHistory]
   );
 
   useEffect(() => {
@@ -160,13 +206,36 @@ export default function Today() {
     return () => clearTimeout(t);
   }, [bothDone, daySealed]);
 
-  const handleOpenReflection = useCallback(() => {
-    setEditTarget(null);
-    reflectSheetRef.current?.present();
-  }, []);
+  const presentComposer = useCallback(
+    (kind: ReflectionKind, target?: HistoryEntry) => {
+      setComposerKind(kind);
+      setEditTarget(
+        target
+          ? { dateKey: target.dateKey, kind: target.kind, text: target.text }
+          : null
+      );
+      reflectSheetRef.current?.present();
+    },
+    []
+  );
 
-  const handleOpenDetail = useCallback((key: string) => {
-    setSelectedKey(key);
+  const handleOpenMorningReflection = useCallback(() => {
+    presentComposer("morning");
+  }, [presentComposer]);
+
+  const handlePracticeTap = useCallback(
+    (id: PracticeId) => {
+      if (id === "eveningReflection") {
+        presentComposer("evening");
+        return;
+      }
+      completePractice(id);
+    },
+    [completePractice, presentComposer]
+  );
+
+  const handleOpenDetail = useCallback((entry: HistoryEntry) => {
+    setSelectedId(entryId(entry));
     detailSheetRef.current?.present();
   }, []);
 
@@ -174,30 +243,31 @@ export default function Today() {
     if (!selectedReflection) {
       return;
     }
-    const target = {
-      key: selectedReflection.key,
-      text: selectedReflection.text,
-    };
     detailSheetRef.current?.dismiss();
-    setEditTarget(target);
-    setTimeout(() => reflectSheetRef.current?.present(), 250);
-  }, [selectedReflection]);
+    setTimeout(
+      () => presentComposer(selectedReflection.kind, selectedReflection),
+      250
+    );
+  }, [selectedReflection, presentComposer]);
 
   const handleAskDelete = useCallback(() => {
-    if (!selectedKey) {
+    if (!selectedReflection) {
       return;
     }
     detailSheetRef.current?.dismiss();
-    setConfirmDeleteKey(selectedKey);
-  }, [selectedKey]);
+    setConfirmDelete({
+      dateKey: selectedReflection.dateKey,
+      kind: selectedReflection.kind,
+    });
+  }, [selectedReflection]);
 
   const handleConfirmDelete = useCallback(() => {
-    if (confirmDeleteKey) {
-      deleteReflection(confirmDeleteKey);
+    if (confirmDelete) {
+      deleteReflection(confirmDelete.dateKey, confirmDelete.kind);
     }
-    setConfirmDeleteKey(null);
-    setSelectedKey(null);
-  }, [confirmDeleteKey, deleteReflection]);
+    setConfirmDelete(null);
+    setSelectedId(null);
+  }, [confirmDelete, deleteReflection]);
 
   const userInitial = state.userName.charAt(0).toUpperCase();
 
@@ -297,7 +367,7 @@ export default function Today() {
             ) : (
               <Pressable
                 className="h-12 items-center justify-center rounded-full bg-card px-8 active:scale-95"
-                onPress={handleOpenReflection}
+                onPress={handleOpenMorningReflection}
               >
                 <Text className="font-semibold text-[17px] text-foreground">
                   Reflect
@@ -337,6 +407,13 @@ export default function Today() {
             )}
           </View>
 
+          {/* Daily practices */}
+          <DailyPracticesSection
+            onTap={handlePracticeTap}
+            practices={todaysPractices}
+            virtue={todaysVirtue}
+          />
+
           {/* Reflection history */}
           <View className="flex-col gap-3">
             <Text className="px-2 font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
@@ -360,12 +437,17 @@ export default function Today() {
                   return (
                     <Pressable
                       className={`flex-col gap-1 px-5 py-4 active:bg-muted/50 ${isLast ? "" : "border-border border-b"}`}
-                      key={entry.key}
-                      onPress={() => handleOpenDetail(entry.key)}
+                      key={entryId(entry)}
+                      onPress={() => handleOpenDetail(entry)}
                     >
-                      <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
-                        {formatReflectionDate(entry.key)}
-                      </Text>
+                      <View className="flex-row items-center gap-2">
+                        <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+                          {formatReflectionDate(entry.dateKey)}
+                        </Text>
+                        <Text className="font-semibold text-[10px] text-muted-foreground/60 uppercase tracking-widest">
+                          · {entry.kind}
+                        </Text>
+                      </View>
                       <Text
                         className="text-[15px] text-foreground leading-relaxed"
                         numberOfLines={2}
@@ -382,14 +464,17 @@ export default function Today() {
       </ScrollView>
 
       <ReflectionBottomSheet
-        editDateKey={editTarget?.key}
+        editDateKey={editTarget?.dateKey}
         initialText={editTarget?.text ?? ""}
+        kind={editTarget?.kind ?? composerKind}
         mode={editTarget ? "edit" : "create"}
         ref={reflectSheetRef}
       />
       <ReflectionDetailSheet
         dateLabel={
-          selectedReflection ? formatReflectionDate(selectedReflection.key) : ""
+          selectedReflection
+            ? `${formatReflectionDate(selectedReflection.dateKey)} · ${selectedReflection.kind}`
+            : ""
         }
         onDelete={handleAskDelete}
         onEdit={handleEdit}
@@ -400,10 +485,10 @@ export default function Today() {
         confirmLabel="Delete"
         description="This reflection will be permanently removed."
         destructive
-        onCancel={() => setConfirmDeleteKey(null)}
+        onCancel={() => setConfirmDelete(null)}
         onConfirm={handleConfirmDelete}
         title="Delete reflection?"
-        visible={confirmDeleteKey !== null}
+        visible={confirmDelete !== null}
       />
     </View>
   );

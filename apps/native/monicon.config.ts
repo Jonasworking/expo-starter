@@ -114,6 +114,11 @@ export default {
     "ph:caret-right-bold",
     "ph:shield-bold",
     "ph:trash-bold",
+    "ph:moon-bold",
+    "ph:skull-bold",
+    "ph:scales-bold",
+    "ph:wind-bold",
+    "ph:pencil-simple-bold",
   ],
   collections: [],
   plugins: [

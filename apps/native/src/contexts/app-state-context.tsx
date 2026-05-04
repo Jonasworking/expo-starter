@@ -73,12 +73,79 @@ const TRIAL_POOL: readonly Trial[] = [
   },
 ] as const;
 
+interface Virtue {
+  id: "wisdom" | "courage" | "justice" | "temperance";
+  name: string;
+  description: string;
+}
+
+// Indexed by Date.getDay(): 0=Sun ... 6=Sat.
+// Mo/Fr → Wisdom, Tu/Sa → Courage, We/Su → Justice, Th → Temperance.
+const VIRTUES: readonly Virtue[] = [
+  { id: "justice", name: "Justice", description: "Help someone today." },
+  { id: "wisdom", name: "Wisdom", description: "Learn something new today." },
+  {
+    id: "courage",
+    name: "Courage",
+    description: "Do something uncomfortable.",
+  },
+  { id: "justice", name: "Justice", description: "Help someone today." },
+  {
+    id: "temperance",
+    name: "Temperance",
+    description: "Practice restraint today.",
+  },
+  { id: "wisdom", name: "Wisdom", description: "Learn something new today." },
+  {
+    id: "courage",
+    name: "Courage",
+    description: "Do something uncomfortable.",
+  },
+] as const;
+
+type PracticeId = "silence" | "mementoMori" | "virtue" | "eveningReflection";
+type ReflectionKind = "morning" | "evening";
+
+const PRACTICE_REWARDS: Record<PracticeId, number> = {
+  silence: 10,
+  mementoMori: 10,
+  virtue: 15,
+  eveningReflection: 15,
+};
+
+interface DailyPractices {
+  date: string;
+  silence: boolean;
+  mementoMori: boolean;
+  virtue: boolean;
+  eveningReflection: boolean;
+}
+
+const DEFAULT_PRACTICES: DailyPractices = {
+  date: "",
+  silence: false,
+  mementoMori: false,
+  virtue: false,
+  eveningReflection: false,
+};
+
 interface DayData {
   reflected: boolean;
   reflectionText: string;
+  eveningReflected: boolean;
+  eveningReflectionText: string;
   trialCompleted: boolean;
   sealed: boolean;
 }
+
+const DEFAULT_DAY: DayData = {
+  reflected: false,
+  reflectionText: "",
+  eveningReflected: false,
+  eveningReflectionText: "",
+  trialCompleted: false,
+  sealed: false,
+};
 
 interface FenrirData {
   rank: number;
@@ -95,6 +162,7 @@ interface AppStateData {
   streak: number;
   days: Record<string, DayData>;
   fenrir: FenrirData;
+  dailyPractices: DailyPractices;
 }
 
 const DEFAULT_STATE: AppStateData = {
@@ -110,17 +178,26 @@ const DEFAULT_STATE: AppStateData = {
     activeTrialIndex: 0,
     currentDayInTrial: 1,
   },
+  dailyPractices: DEFAULT_PRACTICES,
 };
 
 interface AppStateContextType {
   isLoaded: boolean;
   state: AppStateData;
   activeTrial: Trial;
+  todaysPractices: DailyPractices;
+  todaysVirtue: Virtue;
   completeOnboarding: () => void;
   completeReflection: (text: string) => void;
-  editReflection: (dateKey: string, text: string) => void;
-  deleteReflection: (dateKey: string) => void;
+  completeEveningReflection: (text: string) => void;
+  editReflection: (
+    dateKey: string,
+    text: string,
+    kind?: ReflectionKind
+  ) => void;
+  deleteReflection: (dateKey: string, kind?: ReflectionKind) => void;
   completeTrial: () => void;
+  completePractice: (id: PracticeId) => void;
   sealDay: () => void;
   resetProgress: () => void;
   setUserName: (name: string) => void;
@@ -156,11 +233,31 @@ function calculateStreak(days: Record<string, DayData>): number {
 }
 
 function mergeWithDefaults(loaded: Partial<AppStateData>): AppStateData {
+  const days: Record<string, DayData> = {};
+  for (const [key, day] of Object.entries(loaded.days ?? {})) {
+    days[key] = { ...DEFAULT_DAY, ...day };
+  }
   return {
     ...DEFAULT_STATE,
     ...loaded,
     fenrir: { ...DEFAULT_STATE.fenrir, ...(loaded.fenrir ?? {}) },
-    days: loaded.days ?? {},
+    days,
+    dailyPractices: {
+      ...DEFAULT_PRACTICES,
+      ...(loaded.dailyPractices ?? {}),
+    },
+  };
+}
+
+function rewardEmbers(
+  fenrir: FenrirData,
+  amount: number
+): Pick<FenrirData, "rank" | "embersTowardNextRank"> {
+  const newEmbers = fenrir.embersTowardNextRank + amount;
+  const rankUp = newEmbers >= EMBERS_PER_RANK;
+  return {
+    rank: rankUp ? fenrir.rank + 1 : fenrir.rank,
+    embersTowardNextRank: rankUp ? newEmbers - EMBERS_PER_RANK : newEmbers,
   };
 }
 
@@ -199,12 +296,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const completeReflection = useCallback((text: string) => {
     const key = toDateKey();
     setState((prev) => {
-      const existing = prev.days[key] ?? {
-        reflected: false,
-        reflectionText: "",
-        trialCompleted: false,
-        sealed: false,
-      };
+      const existing = prev.days[key] ?? DEFAULT_DAY;
       return {
         ...prev,
         days: {
@@ -215,50 +307,86 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const editReflection = useCallback((dateKey: string, text: string) => {
+  const completeEveningReflection = useCallback((text: string) => {
+    const key = toDateKey();
     setState((prev) => {
-      const existing = prev.days[dateKey];
-      if (!existing) {
-        return prev;
-      }
+      const existing = prev.days[key] ?? DEFAULT_DAY;
+      const today = toDateKey();
+      const practices =
+        prev.dailyPractices.date === today
+          ? prev.dailyPractices
+          : { ...DEFAULT_PRACTICES, date: today };
+      const alreadyCompleted = practices.eveningReflection;
+      const reward = alreadyCompleted ? 0 : PRACTICE_REWARDS.eveningReflection;
+
       return {
         ...prev,
         days: {
           ...prev.days,
-          [dateKey]: { ...existing, reflectionText: text },
+          [key]: {
+            ...existing,
+            eveningReflected: true,
+            eveningReflectionText: text,
+          },
+        },
+        dailyPractices: { ...practices, eveningReflection: true },
+        fenrir: {
+          ...prev.fenrir,
+          ...rewardEmbers(prev.fenrir, reward),
         },
       };
     });
   }, []);
 
-  const deleteReflection = useCallback((dateKey: string) => {
-    setState((prev) => {
-      const existing = prev.days[dateKey];
-      if (!existing) {
-        return prev;
-      }
-      return {
-        ...prev,
-        days: {
-          ...prev.days,
-          [dateKey]: { ...existing, reflected: false, reflectionText: "" },
-        },
-      };
-    });
-  }, []);
+  const editReflection = useCallback(
+    (dateKey: string, text: string, kind: ReflectionKind = "morning") => {
+      setState((prev) => {
+        const existing = prev.days[dateKey];
+        if (!existing) {
+          return prev;
+        }
+        const updated: DayData =
+          kind === "morning"
+            ? { ...existing, reflectionText: text }
+            : { ...existing, eveningReflectionText: text };
+        return {
+          ...prev,
+          days: { ...prev.days, [dateKey]: updated },
+        };
+      });
+    },
+    []
+  );
+
+  const deleteReflection = useCallback(
+    (dateKey: string, kind: ReflectionKind = "morning") => {
+      setState((prev) => {
+        const existing = prev.days[dateKey];
+        if (!existing) {
+          return prev;
+        }
+        const updated: DayData =
+          kind === "morning"
+            ? { ...existing, reflected: false, reflectionText: "" }
+            : {
+                ...existing,
+                eveningReflected: false,
+                eveningReflectionText: "",
+              };
+        return {
+          ...prev,
+          days: { ...prev.days, [dateKey]: updated },
+        };
+      });
+    },
+    []
+  );
 
   const completeTrial = useCallback(() => {
     const key = toDateKey();
     setState((prev) => {
-      const existing = prev.days[key] ?? {
-        reflected: false,
-        reflectionText: "",
-        trialCompleted: false,
-        sealed: false,
-      };
+      const existing = prev.days[key] ?? DEFAULT_DAY;
       const newTotalTrials = prev.fenrir.totalTrials + 1;
-      const newEmbers = prev.fenrir.embersTowardNextRank + 50;
-      const rankUp = newEmbers >= EMBERS_PER_RANK;
 
       const activeTrial = TRIAL_POOL[prev.fenrir.activeTrialIndex];
       const finishedTrial = prev.fenrir.currentDayInTrial >= activeTrial.days;
@@ -278,12 +406,30 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         fenrir: {
           ...prev.fenrir,
           totalTrials: newTotalTrials,
-          rank: rankUp ? prev.fenrir.rank + 1 : prev.fenrir.rank,
-          embersTowardNextRank: rankUp
-            ? newEmbers - EMBERS_PER_RANK
-            : newEmbers,
+          ...rewardEmbers(prev.fenrir, 50),
           activeTrialIndex: nextTrialIndex,
           currentDayInTrial: nextDayInTrial,
+        },
+      };
+    });
+  }, []);
+
+  const completePractice = useCallback((id: PracticeId) => {
+    setState((prev) => {
+      const today = toDateKey();
+      const practices =
+        prev.dailyPractices.date === today
+          ? prev.dailyPractices
+          : { ...DEFAULT_PRACTICES, date: today };
+      if (practices[id]) {
+        return prev;
+      }
+      return {
+        ...prev,
+        dailyPractices: { ...practices, [id]: true },
+        fenrir: {
+          ...prev.fenrir,
+          ...rewardEmbers(prev.fenrir, PRACTICE_REWARDS[id]),
         },
       };
     });
@@ -292,12 +438,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const sealDay = useCallback(() => {
     const key = toDateKey();
     setState((prev) => {
-      const existing = prev.days[key] ?? {
-        reflected: false,
-        reflectionText: "",
-        trialCompleted: false,
-        sealed: false,
-      };
+      const existing = prev.days[key] ?? DEFAULT_DAY;
       const updatedDays = {
         ...prev.days,
         [key]: { ...existing, sealed: true },
@@ -341,16 +482,32 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [state.fenrir.activeTrialIndex]
   );
 
+  const todaysPractices = useMemo<DailyPractices>(() => {
+    const today = toDateKey();
+    if (state.dailyPractices.date === today) {
+      return state.dailyPractices;
+    }
+    return { ...DEFAULT_PRACTICES, date: today };
+  }, [state.dailyPractices]);
+
+  const todaysVirtue = useMemo<Virtue>(() => {
+    return VIRTUES[new Date().getDay()];
+  }, []);
+
   const value = useMemo<AppStateContextType>(
     () => ({
       isLoaded,
       state,
       activeTrial,
+      todaysPractices,
+      todaysVirtue,
       completeOnboarding,
       completeReflection,
+      completeEveningReflection,
       editReflection,
       deleteReflection,
       completeTrial,
+      completePractice,
       sealDay,
       resetProgress,
       setUserName,
@@ -360,11 +517,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       isLoaded,
       state,
       activeTrial,
+      todaysPractices,
+      todaysVirtue,
       completeOnboarding,
       completeReflection,
+      completeEveningReflection,
       editReflection,
       deleteReflection,
       completeTrial,
+      completePractice,
       sealDay,
       resetProgress,
       setUserName,
@@ -391,5 +552,13 @@ export function getRankTitle(rank: number): string {
   return `Ronin ${RANK_TITLES[Math.min(rank - 1, RANK_TITLES.length - 1)]}`;
 }
 
-export { toDateKey, TRIAL_POOL };
-export type { DayData, AppStateData, Trial };
+export { toDateKey, TRIAL_POOL, VIRTUES };
+export type {
+  DayData,
+  AppStateData,
+  Trial,
+  Virtue,
+  DailyPractices,
+  PracticeId,
+  ReflectionKind,
+};

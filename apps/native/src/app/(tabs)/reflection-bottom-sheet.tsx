@@ -7,13 +7,17 @@ import { ArrowUpBoldIcon } from "@/components/icons/ph/arrow-up-bold";
 import { XIcon } from "@/components/icons/ph/x";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { Text } from "@/components/ui/text";
-import { useAppState } from "@/contexts/app-state-context";
+import { type ReflectionKind, useAppState } from "@/contexts/app-state-context";
 import { useThemeColor } from "@/lib/theme/use-theme-color";
 
-const REFLECTION_QUESTION = "What is within your control today?";
+const PROMPTS: Record<ReflectionKind, string> = {
+  morning: "What is within your control today?",
+  evening: "What did you do well today?",
+};
 
 interface ReflectionBottomSheetProps {
   mode?: "create" | "edit";
+  kind?: ReflectionKind;
   initialText?: string;
   editDateKey?: string;
 }
@@ -22,11 +26,12 @@ const ReflectionBottomSheet = forwardRef<
   BottomSheetModal,
   ReflectionBottomSheetProps
 >(function ReflectionBottomSheet(
-  { mode = "create", initialText = "", editDateKey },
+  { mode = "create", kind = "morning", initialText = "", editDateKey },
   ref
 ) {
   const [text, setText] = useState(initialText);
-  const { completeReflection, editReflection } = useAppState();
+  const { completeReflection, completeEveningReflection, editReflection } =
+    useAppState();
   const [foreground, mutedForeground] = useThemeColor([
     "foreground",
     "muted-foreground",
@@ -48,7 +53,9 @@ const ReflectionBottomSheet = forwardRef<
       return;
     }
     if (mode === "edit" && editDateKey) {
-      editReflection(editDateKey, trimmed);
+      editReflection(editDateKey, trimmed, kind);
+    } else if (kind === "evening") {
+      completeEveningReflection(trimmed);
     } else {
       completeReflection(trimmed);
     }
@@ -57,8 +64,10 @@ const ReflectionBottomSheet = forwardRef<
   }, [
     text,
     mode,
+    kind,
     editDateKey,
     completeReflection,
+    completeEveningReflection,
     editReflection,
     handleClose,
   ]);
@@ -83,7 +92,7 @@ const ReflectionBottomSheet = forwardRef<
       {/* Content */}
       <View className="flex-1 px-8 pt-4">
         <Text className="mb-6 font-serif text-[36px] text-foreground leading-tight">
-          {REFLECTION_QUESTION}
+          {PROMPTS[kind]}
         </Text>
 
         <BottomSheetTextInput
