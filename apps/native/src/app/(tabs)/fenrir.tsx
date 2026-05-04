@@ -1,10 +1,5 @@
-import {
-  Image,
-  Platform,
-  ScrollView,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Image } from "expo-image";
+import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CrownBoldIcon } from "@/components/icons/solar/crown-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
@@ -59,9 +54,12 @@ export default function Fenrir() {
         style={{ height: wolfAreaHeight, paddingTop: insets.top }}
       >
         <Image
-          resizeMode="contain"
+          cachePolicy="memory-disk"
+          contentFit="contain"
+          priority="high"
           source={{ uri: WOLF_URI }}
           style={{ width: wolfWidth, height: wolfHeight }}
+          transition={200}
         />
 
         {/* Speech bubble */}
