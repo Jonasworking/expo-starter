@@ -21,6 +21,58 @@ const RANK_TITLES = [
   "Legend",
 ];
 
+interface Trial {
+  id: string;
+  title: string;
+  description: string;
+  days: number;
+}
+
+const TRIAL_POOL: readonly Trial[] = [
+  {
+    id: "cold-shower",
+    title: "cold shower.",
+    description: "Embrace the voluntary discomfort. Rinse the spirit.",
+    days: 7,
+  },
+  {
+    id: "silent-hour",
+    title: "silent hour.",
+    description: "One hour of complete silence. No phone. No words.",
+    days: 7,
+  },
+  {
+    id: "early-rise",
+    title: "early rise.",
+    description: "Wake before six. Greet the dawn before the world stirs.",
+    days: 7,
+  },
+  {
+    id: "mindful-fast",
+    title: "mindful fast.",
+    description: "Sixteen hours without food. Sharpen the will, not the plate.",
+    days: 7,
+  },
+  {
+    id: "deep-read",
+    title: "deep read.",
+    description: "Thirty minutes with a book. No screens. No interruptions.",
+    days: 7,
+  },
+  {
+    id: "no-complaints",
+    title: "no complaints.",
+    description: "A full day without complaint. Observe, accept, move forward.",
+    days: 7,
+  },
+  {
+    id: "walk-in-silence",
+    title: "walk in silence.",
+    description: "Thirty minutes walking. No headphones. Only your thoughts.",
+    days: 7,
+  },
+] as const;
+
 interface DayData {
   reflected: boolean;
   reflectionText: string;
@@ -32,6 +84,8 @@ interface FenrirData {
   rank: number;
   embersTowardNextRank: number;
   totalTrials: number;
+  activeTrialIndex: number;
+  currentDayInTrial: number;
 }
 
 interface AppStateData {
@@ -53,12 +107,15 @@ const DEFAULT_STATE: AppStateData = {
     rank: 1,
     embersTowardNextRank: 0,
     totalTrials: 0,
+    activeTrialIndex: 0,
+    currentDayInTrial: 1,
   },
 };
 
 interface AppStateContextType {
   isLoaded: boolean;
   state: AppStateData;
+  activeTrial: Trial;
   completeOnboarding: () => void;
   completeReflection: (text: string) => void;
   completeTrial: () => void;
@@ -168,6 +225,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       const newTotalTrials = prev.fenrir.totalTrials + 1;
       const newEmbers = prev.fenrir.embersTowardNextRank + 50;
       const rankUp = newEmbers >= EMBERS_PER_RANK;
+
+      const activeTrial = TRIAL_POOL[prev.fenrir.activeTrialIndex];
+      const finishedTrial = prev.fenrir.currentDayInTrial >= activeTrial.days;
+      const nextTrialIndex = finishedTrial
+        ? (prev.fenrir.activeTrialIndex + 1) % TRIAL_POOL.length
+        : prev.fenrir.activeTrialIndex;
+      const nextDayInTrial = finishedTrial
+        ? 1
+        : prev.fenrir.currentDayInTrial + 1;
+
       return {
         ...prev,
         days: {
@@ -181,6 +248,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           embersTowardNextRank: rankUp
             ? newEmbers - EMBERS_PER_RANK
             : newEmbers,
+          activeTrialIndex: nextTrialIndex,
+          currentDayInTrial: nextDayInTrial,
         },
       };
     });
@@ -231,10 +300,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, reminderTime: time }));
   }, []);
 
+  const activeTrial = useMemo(
+    () =>
+      TRIAL_POOL[state.fenrir.activeTrialIndex % TRIAL_POOL.length] ??
+      TRIAL_POOL[0],
+    [state.fenrir.activeTrialIndex]
+  );
+
   const value = useMemo<AppStateContextType>(
     () => ({
       isLoaded,
       state,
+      activeTrial,
       completeOnboarding,
       completeReflection,
       completeTrial,
@@ -246,6 +323,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [
       isLoaded,
       state,
+      activeTrial,
       completeOnboarding,
       completeReflection,
       completeTrial,
@@ -275,5 +353,5 @@ export function getRankTitle(rank: number): string {
   return `Ronin ${RANK_TITLES[Math.min(rank - 1, RANK_TITLES.length - 1)]}`;
 }
 
-export { toDateKey };
-export type { DayData, AppStateData };
+export { toDateKey, TRIAL_POOL };
+export type { DayData, AppStateData, Trial };

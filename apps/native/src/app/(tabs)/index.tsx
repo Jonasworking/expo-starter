@@ -5,7 +5,6 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
-import { UserBoldIcon } from "@/components/icons/solar/user-bold";
 import { Text } from "@/components/ui/text";
 import { toDateKey, useAppState } from "@/contexts/app-state-context";
 import { ReflectionBottomSheet } from "./reflection-bottom-sheet";
@@ -45,10 +44,33 @@ function getGreeting() {
   if (hour >= 5 && hour < 12) {
     return "good morning.";
   }
-  if (hour >= 12 && hour < 17) {
+  if (hour >= 12 && hour < 18) {
     return "good afternoon.";
   }
-  return "good evening.";
+  if (hour >= 18 && hour < 23) {
+    return "good evening.";
+  }
+  return "good night.";
+}
+
+function formatReflectionDate(key: string): string {
+  const [y, m, d] = key.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  if (date.getTime() === today.getTime()) {
+    return "Today";
+  }
+  if (date.getTime() === yesterday.getTime()) {
+    return "Yesterday";
+  }
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function getWeekDays(days: Record<string, { sealed?: boolean }>) {
@@ -79,13 +101,13 @@ function getWeekDays(days: Record<string, { sealed?: boolean }>) {
 }
 
 const REFLECTION_QUESTION = "What is within your control today?";
-const TRIAL_NAME = "cold shower.";
-const TRIAL_DESCRIPTION = "Embrace the voluntary discomfort. Rinse the spirit.";
+const REFLECTION_HISTORY_LIMIT = 5;
+const REFLECTION_PREVIEW_CHARS = 90;
 
 export default function Today() {
   const insets = useSafeAreaInsets();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const { state, completeTrial } = useAppState();
+  const { state, activeTrial, completeTrial } = useAppState();
 
   const todayKey = toDateKey();
   const todayData = state.days[todayKey];
@@ -94,12 +116,17 @@ export default function Today() {
   const daySealed = Boolean(todayData?.sealed);
   const bothDone = reflected && trialCompleted;
 
-  const trialDay = useMemo(() => {
-    const cycleDay = (state.fenrir.totalTrials % 7) + 1;
-    return trialCompleted ? cycleDay : cycleDay;
-  }, [state.fenrir.totalTrials, trialCompleted]);
-
   const weekDays = useMemo(() => getWeekDays(state.days), [state.days]);
+
+  const reflectionHistory = useMemo(() => {
+    return Object.entries(state.days)
+      .filter(
+        ([, day]) => day.reflected && day.reflectionText.trim().length > 0
+      )
+      .sort(([a], [b]) => (a < b ? 1 : -1))
+      .slice(0, REFLECTION_HISTORY_LIMIT)
+      .map(([key, day]) => ({ key, text: day.reflectionText }));
+  }, [state.days]);
 
   useEffect(() => {
     if (bothDone && !daySealed) {
@@ -111,6 +138,8 @@ export default function Today() {
   const handleOpenReflection = useCallback(() => {
     bottomSheetRef.current?.present();
   }, []);
+
+  const userInitial = state.userName.charAt(0).toUpperCase();
 
   return (
     <View className="flex-1 bg-background">
@@ -135,10 +164,13 @@ export default function Today() {
           </Text>
 
           <Pressable
-            className="size-12 items-center justify-center rounded-full bg-primary"
+            className="size-12 items-center justify-center rounded-full bg-primary active:scale-95"
+            hitSlop={8}
             onPress={() => router.push("/settings")}
           >
-            <UserBoldIcon className="size-6 text-primary-foreground" />
+            <Text className="font-bold text-[18px] text-primary-foreground">
+              {userInitial}
+            </Text>
           </Pressable>
         </View>
 
@@ -214,16 +246,17 @@ export default function Today() {
             )}
           </View>
 
-          {/* Cold Shower Trial card */}
+          {/* Trial card */}
           <View className="items-center rounded-[22px] border border-border bg-card p-8">
             <Text className="mb-1 font-heading-bold text-[26px] text-foreground">
-              {TRIAL_NAME}
+              {activeTrial.title}
             </Text>
             <Text className="mb-6 font-medium text-[13px] text-muted-foreground">
-              Day {toRoman(trialDay)} of VII
+              Day {toRoman(state.fenrir.currentDayInTrial)} of{" "}
+              {toRoman(activeTrial.days)}
             </Text>
             <Text className="mb-8 px-4 text-center font-medium text-[18px] text-foreground leading-relaxed">
-              {TRIAL_DESCRIPTION}
+              {activeTrial.description}
             </Text>
             {trialCompleted ? (
               <View className="h-14 w-full flex-row items-center justify-center gap-2 rounded-full bg-muted">
@@ -243,6 +276,40 @@ export default function Today() {
               </Pressable>
             )}
           </View>
+
+          {/* Reflection history */}
+          {reflectionHistory.length > 0 && (
+            <View className="flex-col gap-3">
+              <Text className="px-2 font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+                Past Reflections
+              </Text>
+              <View className="flex-col overflow-hidden rounded-[22px] border border-border bg-card">
+                {reflectionHistory.map((entry, index) => {
+                  const preview =
+                    entry.text.length > REFLECTION_PREVIEW_CHARS
+                      ? `${entry.text.slice(0, REFLECTION_PREVIEW_CHARS).trimEnd()}…`
+                      : entry.text;
+                  const isLast = index === reflectionHistory.length - 1;
+                  return (
+                    <View
+                      className={`flex-col gap-1 px-5 py-4 ${isLast ? "" : "border-border border-b"}`}
+                      key={entry.key}
+                    >
+                      <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+                        {formatReflectionDate(entry.key)}
+                      </Text>
+                      <Text
+                        className="text-[15px] text-foreground leading-relaxed"
+                        numberOfLines={2}
+                      >
+                        {preview}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
         </View>
       </ScrollView>
 
