@@ -107,6 +107,7 @@ const REFLECTION_PREVIEW_CHARS = 90;
 export default function Today() {
   const insets = useSafeAreaInsets();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const sealedNavigatedRef = useRef(false);
   const { state, activeTrial, completeTrial } = useAppState();
 
   const todayKey = toDateKey();
@@ -129,10 +130,16 @@ export default function Today() {
   }, [state.days]);
 
   useEffect(() => {
-    if (bothDone && !daySealed) {
-      const t = setTimeout(() => router.push("/sealed"), 600);
-      return () => clearTimeout(t);
+    if (daySealed) {
+      sealedNavigatedRef.current = false;
+      return;
     }
+    if (!bothDone || sealedNavigatedRef.current) {
+      return;
+    }
+    sealedNavigatedRef.current = true;
+    const t = setTimeout(() => router.replace("/sealed"), 600);
+    return () => clearTimeout(t);
   }, [bothDone, daySealed]);
 
   const handleOpenReflection = useCallback(() => {
