@@ -6,7 +6,11 @@ import { CrownBoldIcon } from "@/components/icons/solar/crown-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
 import { ShieldCheckBoldIcon } from "@/components/icons/solar/shield-check-bold";
 import { Text } from "@/components/ui/text";
-import { getRankTitle, useAppState } from "@/contexts/app-state-context";
+import {
+  getRankTitle,
+  HABIT_AUTOMATICITY_DAYS,
+  useAppState,
+} from "@/contexts/app-state-context";
 
 const WOLF_URI =
   "https://ggrhecslgdflloszjkwl.supabase.co/storage/v1/object/public/user-assets/7oidmK6IZjC/ai/wolf-idle-png-vTNeWnkfaQr.png";
@@ -36,8 +40,13 @@ const EMBERS_PER_RANK = 300;
 export default function Fenrir() {
   const insets = useSafeAreaInsets();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const { state, rollingStats } = useAppState();
+  const { state, rollingStats, totalActiveDays } = useAppState();
   const { fenrir, streak } = state;
+  const habitPct = Math.min(
+    Math.round((totalActiveDays / HABIT_AUTOMATICITY_DAYS) * 100),
+    100
+  );
+  const habitReached = totalActiveDays >= HABIT_AUTOMATICITY_DAYS;
 
   const wolfAreaHeight = windowHeight * 0.48;
   const wolfWidth = windowWidth * 0.75;
@@ -146,6 +155,40 @@ export default function Fenrir() {
           <Text className="text-[13px] text-muted-foreground leading-relaxed">
             A rolling window beats a brittle streak. Miss a day or two — the
             path remains.
+          </Text>
+        </View>
+
+        {/* 66-day habit automaticity */}
+        <View className="gap-3 rounded-[22px] border border-border bg-card p-6">
+          <View className="flex-row items-center justify-between">
+            <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+              Habit Automaticity
+            </Text>
+            {habitReached ? (
+              <View className="rounded-full bg-primary px-3 py-1">
+                <Text className="font-semibold text-[10px] text-primary-foreground uppercase tracking-widest">
+                  Achieved
+                </Text>
+              </View>
+            ) : (
+              <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+                {habitPct}%
+              </Text>
+            )}
+          </View>
+          <Text className="font-heading-bold text-[24px] text-foreground">
+            {totalActiveDays} of {HABIT_AUTOMATICITY_DAYS} days
+          </Text>
+          <View className="h-2 w-full overflow-hidden rounded-full bg-muted">
+            <View
+              className="h-full rounded-full bg-primary"
+              style={{ width: `${habitPct}%` }}
+            />
+          </View>
+          <Text className="text-[13px] text-muted-foreground leading-relaxed">
+            {habitReached
+              ? "The practice has become the path. The path has become you."
+              : "Research suggests it takes ~66 days for a behavior to become automatic. Each day of practice counts."}
           </Text>
         </View>
 

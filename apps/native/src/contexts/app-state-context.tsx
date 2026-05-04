@@ -136,6 +136,11 @@ interface DayData {
   eveningReflectionText: string;
   trialCompleted: boolean;
   sealed: boolean;
+  // Snapshot of practices completed on this day (silence + mementoMori +
+  // virtue). Evening reflection isn't counted here because eveningReflected
+  // already represents it. Persisting this lets the 66-day total stay
+  // accurate after midnight when dailyPractices resets.
+  practicesDone: number;
 }
 
 const DEFAULT_DAY: DayData = {
@@ -145,7 +150,26 @@ const DEFAULT_DAY: DayData = {
   eveningReflectionText: "",
   trialCompleted: false,
   sealed: false,
+  practicesDone: 0,
 };
+
+const HABIT_AUTOMATICITY_DAYS = 66;
+
+function countActiveDays(days: Record<string, DayData>): number {
+  let count = 0;
+  for (const day of Object.values(days)) {
+    if (
+      day.reflected ||
+      day.eveningReflected ||
+      day.trialCompleted ||
+      day.sealed ||
+      day.practicesDone > 0
+    ) {
+      count++;
+    }
+  }
+  return count;
+}
 
 interface FenrirData {
   rank: number;
@@ -198,6 +222,7 @@ interface AppStateContextType {
   todaysPractices: DailyPractices;
   todaysVirtue: Virtue;
   rollingStats: RollingStats;
+  totalActiveDays: number;
   completeOnboarding: () => void;
   completeReflection: (text: string) => void;
   completeEveningReflection: (text: string) => void;
@@ -506,9 +531,23 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           : { ...DEFAULT_PRACTICES, date: today };
       const wasOn = practices[id];
       const delta = wasOn ? -PRACTICE_REWARDS[id] : PRACTICE_REWARDS[id];
+      const nextPractices = { ...practices, [id]: !wasOn };
+
+      // Persist the silence/mementoMori/virtue count into days[today] so the
+      // 66-day total still reflects this day after midnight.
+      const existingDay = prev.days[today] ?? DEFAULT_DAY;
+      const practicesDone =
+        (nextPractices.silence ? 1 : 0) +
+        (nextPractices.mementoMori ? 1 : 0) +
+        (nextPractices.virtue ? 1 : 0);
+
       return {
         ...prev,
-        dailyPractices: { ...practices, [id]: !wasOn },
+        dailyPractices: nextPractices,
+        days: {
+          ...prev.days,
+          [today]: { ...existingDay, practicesDone },
+        },
         fenrir: {
           ...prev.fenrir,
           ...adjustEmbers(prev.fenrir, delta),
@@ -582,6 +621,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [state.days]
   );
 
+  const totalActiveDays = useMemo(
+    () => countActiveDays(state.days),
+    [state.days]
+  );
+
   const value = useMemo<AppStateContextType>(
     () => ({
       isLoaded,
@@ -590,6 +634,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       todaysPractices,
       todaysVirtue,
       rollingStats,
+      totalActiveDays,
       completeOnboarding,
       completeReflection,
       completeEveningReflection,
@@ -610,6 +655,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       todaysPractices,
       todaysVirtue,
       rollingStats,
+      totalActiveDays,
       completeOnboarding,
       completeReflection,
       completeEveningReflection,
@@ -644,7 +690,7 @@ export function getRankTitle(rank: number): string {
   return `Ronin ${RANK_TITLES[Math.min(rank - 1, RANK_TITLES.length - 1)]}`;
 }
 
-export { toDateKey, TRIAL_POOL, VIRTUES };
+export { toDateKey, TRIAL_POOL, VIRTUES, HABIT_AUTOMATICITY_DAYS };
 export type {
   DayData,
   AppStateData,
