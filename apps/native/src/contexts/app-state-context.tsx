@@ -151,8 +151,10 @@ interface FenrirData {
   rank: number;
   embersTowardNextRank: number;
   totalTrials: number;
-  activeTrialIndex: number;
+  activeTrialId: string | null;
+  trialStartDate: string | null;
   currentDayInTrial: number;
+  rerollUsed: boolean;
 }
 
 interface AppStateData {
@@ -175,8 +177,10 @@ const DEFAULT_STATE: AppStateData = {
     rank: 1,
     embersTowardNextRank: 0,
     totalTrials: 0,
-    activeTrialIndex: 0,
+    activeTrialId: null,
+    trialStartDate: null,
     currentDayInTrial: 1,
+    rerollUsed: false,
   },
   dailyPractices: DEFAULT_PRACTICES,
 };
@@ -184,7 +188,7 @@ const DEFAULT_STATE: AppStateData = {
 interface AppStateContextType {
   isLoaded: boolean;
   state: AppStateData;
-  activeTrial: Trial;
+  activeTrial: Trial | null;
   todaysPractices: DailyPractices;
   todaysVirtue: Virtue;
   completeOnboarding: () => void;
@@ -197,6 +201,7 @@ interface AppStateContextType {
   ) => void;
   deleteReflection: (dateKey: string, kind?: ReflectionKind) => void;
   completeTrial: () => void;
+  selectTrial: (id: string, opts?: { reroll?: boolean }) => void;
   togglePractice: (id: PracticeId) => void;
   sealDay: () => void;
   resetProgress: () => void;
@@ -237,10 +242,27 @@ function mergeWithDefaults(loaded: Partial<AppStateData>): AppStateData {
   for (const [key, day] of Object.entries(loaded.days ?? {})) {
     days[key] = { ...DEFAULT_DAY, ...day };
   }
+
+  const loadedFenrir = (loaded.fenrir ?? {}) as Partial<FenrirData> & {
+    activeTrialIndex?: number;
+  };
+  // Migrate legacy `activeTrialIndex` (numeric, auto-rotating) to the new
+  // `activeTrialId` model. If the user already had a trial in flight, keep
+  // them on it instead of dropping them back to the selection screen.
+  const fenrir: FenrirData = { ...DEFAULT_STATE.fenrir, ...loadedFenrir };
+  if (
+    loadedFenrir.activeTrialId === undefined &&
+    typeof loadedFenrir.activeTrialIndex === "number"
+  ) {
+    const legacy = TRIAL_POOL[loadedFenrir.activeTrialIndex];
+    fenrir.activeTrialId = legacy?.id ?? null;
+    fenrir.trialStartDate = fenrir.activeTrialId ? toDateKey() : null;
+  }
+
   return {
     ...DEFAULT_STATE,
     ...loaded,
-    fenrir: { ...DEFAULT_STATE.fenrir, ...(loaded.fenrir ?? {}) },
+    fenrir,
     days,
     dailyPractices: {
       ...DEFAULT_PRACTICES,
@@ -386,17 +408,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const completeTrial = useCallback(() => {
     const key = toDateKey();
     setState((prev) => {
+      if (!prev.fenrir.activeTrialId) {
+        return prev;
+      }
       const existing = prev.days[key] ?? DEFAULT_DAY;
       const newTotalTrials = prev.fenrir.totalTrials + 1;
 
-      const activeTrial = TRIAL_POOL[prev.fenrir.activeTrialIndex];
-      const finishedTrial = prev.fenrir.currentDayInTrial >= activeTrial.days;
-      const nextTrialIndex = finishedTrial
-        ? (prev.fenrir.activeTrialIndex + 1) % TRIAL_POOL.length
-        : prev.fenrir.activeTrialIndex;
-      const nextDayInTrial = finishedTrial
-        ? 1
-        : prev.fenrir.currentDayInTrial + 1;
+      const trial = TRIAL_POOL.find((t) => t.id === prev.fenrir.activeTrialId);
+      const trialDays = trial?.days ?? 7;
+      const finishedTrial = prev.fenrir.currentDayInTrial >= trialDays;
 
       return {
         ...prev,
@@ -408,8 +428,35 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           ...prev.fenrir,
           totalTrials: newTotalTrials,
           ...adjustEmbers(prev.fenrir, 50),
-          activeTrialIndex: nextTrialIndex,
-          currentDayInTrial: nextDayInTrial,
+          // Finishing the last day clears the active trial so the user picks
+          // the next one deliberately rather than auto-rotating.
+          activeTrialId: finishedTrial ? null : prev.fenrir.activeTrialId,
+          trialStartDate: finishedTrial ? null : prev.fenrir.trialStartDate,
+          currentDayInTrial: finishedTrial
+            ? 1
+            : prev.fenrir.currentDayInTrial + 1,
+          rerollUsed: finishedTrial ? false : prev.fenrir.rerollUsed,
+        },
+      };
+    });
+  }, []);
+
+  const selectTrial = useCallback((id: string, opts?: { reroll?: boolean }) => {
+    const today = toDateKey();
+    setState((prev) => {
+      if (opts?.reroll && prev.fenrir.rerollUsed) {
+        // Already rerolled this trial — UI should hide the gear, but guard
+        // here too so a stale callback can't slip through.
+        return prev;
+      }
+      return {
+        ...prev,
+        fenrir: {
+          ...prev.fenrir,
+          activeTrialId: id,
+          trialStartDate: today,
+          currentDayInTrial: 1,
+          rerollUsed: Boolean(opts?.reroll),
         },
       };
     });
@@ -475,11 +522,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, reminderTime: time }));
   }, []);
 
-  const activeTrial = useMemo(
+  const activeTrial = useMemo<Trial | null>(
     () =>
-      TRIAL_POOL[state.fenrir.activeTrialIndex % TRIAL_POOL.length] ??
-      TRIAL_POOL[0],
-    [state.fenrir.activeTrialIndex]
+      state.fenrir.activeTrialId
+        ? (TRIAL_POOL.find((t) => t.id === state.fenrir.activeTrialId) ?? null)
+        : null,
+    [state.fenrir.activeTrialId]
   );
 
   const todaysPractices = useMemo<DailyPractices>(() => {
@@ -507,6 +555,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       editReflection,
       deleteReflection,
       completeTrial,
+      selectTrial,
       togglePractice,
       sealDay,
       resetProgress,
@@ -525,6 +574,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       editReflection,
       deleteReflection,
       completeTrial,
+      selectTrial,
       togglePractice,
       sealDay,
       resetProgress,

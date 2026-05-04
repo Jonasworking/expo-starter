@@ -42,14 +42,20 @@ const ROMAN_DAY = [
 const toRoman = (n: number) =>
   n >= 1 && n <= ROMAN_DAY.length ? ROMAN_DAY[n - 1] : String(n);
 
+const TRAILING_DOT = /\.$/;
+
 export default function Sealed() {
   const insets = useSafeAreaInsets();
-  const { state, sealDay } = useAppState();
+  const { state, activeTrial, sealDay } = useAppState();
 
   const todayData = state.days[toDateKey()];
   const reflected = Boolean(todayData?.reflected);
   const trialCompleted = Boolean(todayData?.trialCompleted);
   const dayNum = state.streak + 1;
+  // activeTrial is cleared right after the final day completes, so fall
+  // back to a generic label rather than showing a stale "Cold Shower".
+  const trialLabel =
+    activeTrial?.title.replace(TRAILING_DOT, "") ?? "Daily Trial";
 
   const handleContinue = () => {
     sealDay();
@@ -92,9 +98,7 @@ export default function Sealed() {
           {trialCompleted && (
             <View className="flex-row items-center gap-3">
               <CheckCircleFillIcon className="size-5 text-primary" />
-              <Text className="text-base text-foreground">
-                Cold Shower Trial
-              </Text>
+              <Text className="text-base text-foreground">{trialLabel}</Text>
             </View>
           )}
         </View>

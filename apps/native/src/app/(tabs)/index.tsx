@@ -5,6 +5,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HeaderAvatar } from "@/components/header-avatar";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
+import { DotsThreeBoldIcon } from "@/components/icons/ph/dots-three-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Text } from "@/components/ui/text";
@@ -161,6 +162,7 @@ export default function Today() {
     dateKey: string;
     kind: ReflectionKind;
   } | null>(null);
+  const [confirmReroll, setConfirmReroll] = useState(false);
 
   const todayKey = toDateKey();
   const todayData = state.days[todayKey];
@@ -398,36 +400,65 @@ export default function Today() {
             />
           )}
 
-          {/* Trial card — primary focus in afternoon, supporting otherwise */}
-          <View className="items-center rounded-[22px] border border-border bg-card p-8">
-            <Text className="mb-1 font-heading-bold text-[26px] text-foreground">
-              {activeTrial.title}
-            </Text>
-            <Text className="mb-6 font-medium text-[13px] text-muted-foreground">
-              Day {toRoman(state.fenrir.currentDayInTrial)} of{" "}
-              {toRoman(activeTrial.days)}
-            </Text>
-            <Text className="mb-8 px-4 text-center font-medium text-[18px] text-foreground leading-relaxed">
-              {activeTrial.description}
-            </Text>
-            {trialCompleted ? (
-              <View className="h-14 w-full flex-row items-center justify-center gap-2 rounded-full bg-muted">
-                <CheckBoldIcon className="size-5 text-muted-foreground" />
-                <Text className="font-semibold text-[17px] text-muted-foreground">
-                  Completed
+          {/* Trial card — Choose Your Trial CTA when none active, else active trial */}
+          {activeTrial ? (
+            <View className="items-center rounded-[22px] border border-border bg-card p-8">
+              {!state.fenrir.rerollUsed && (
+                <Pressable
+                  className="absolute -top-1 -right-1 size-9 items-center justify-center rounded-full active:opacity-60"
+                  hitSlop={6}
+                  onPress={() => setConfirmReroll(true)}
+                  style={{ top: 12, right: 12 }}
+                >
+                  <DotsThreeBoldIcon className="size-5 text-muted-foreground" />
+                </Pressable>
+              )}
+              <Text className="mb-1 font-heading-bold text-[26px] text-foreground">
+                {activeTrial.title}
+              </Text>
+              <Text className="mb-6 font-medium text-[13px] text-muted-foreground">
+                Day {toRoman(state.fenrir.currentDayInTrial)} of{" "}
+                {toRoman(activeTrial.days)}
+              </Text>
+              <Text className="mb-8 px-4 text-center font-medium text-[18px] text-foreground leading-relaxed">
+                {activeTrial.description}
+              </Text>
+              {trialCompleted ? (
+                <View className="h-14 w-full flex-row items-center justify-center gap-2 rounded-full bg-muted">
+                  <CheckBoldIcon className="size-5 text-muted-foreground" />
+                  <Text className="font-semibold text-[17px] text-muted-foreground">
+                    Completed
+                  </Text>
+                </View>
+              ) : (
+                <Pressable
+                  className="h-14 w-full items-center justify-center rounded-full bg-primary active:scale-95"
+                  onPress={completeTrial}
+                >
+                  <Text className="font-semibold text-[17px] text-primary-foreground">
+                    Complete Trial
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          ) : (
+            <Pressable
+              className="items-center rounded-[22px] border border-border border-dashed bg-card p-8 active:scale-[0.99]"
+              onPress={() => router.push("/trial-select")}
+            >
+              <Text className="mb-2 font-heading-bold text-[26px] text-foreground">
+                choose your trial.
+              </Text>
+              <Text className="mb-6 px-2 text-center font-medium text-[15px] text-muted-foreground leading-relaxed">
+                Self-chosen practice runs deeper than imposed routine.
+              </Text>
+              <View className="h-14 w-full items-center justify-center rounded-full bg-primary">
+                <Text className="font-semibold text-[17px] text-primary-foreground">
+                  Choose Trial
                 </Text>
               </View>
-            ) : (
-              <Pressable
-                className="h-14 w-full items-center justify-center rounded-full bg-primary active:scale-95"
-                onPress={completeTrial}
-              >
-                <Text className="font-semibold text-[17px] text-primary-foreground">
-                  Complete Trial
-                </Text>
-              </Pressable>
-            )}
-          </View>
+            </Pressable>
+          )}
 
           {period === "afternoon" && (
             <View className="flex-col gap-3">
@@ -539,6 +570,17 @@ export default function Today() {
         onConfirm={handleConfirmDelete}
         title="Delete reflection?"
         visible={confirmDelete !== null}
+      />
+      <ConfirmDialog
+        confirmLabel="Switch"
+        description="Switching loses your current trial progress. You can only switch once per trial."
+        onCancel={() => setConfirmReroll(false)}
+        onConfirm={() => {
+          setConfirmReroll(false);
+          router.push("/trial-select?reroll=1");
+        }}
+        title="Switch trial?"
+        visible={confirmReroll}
       />
     </View>
   );
