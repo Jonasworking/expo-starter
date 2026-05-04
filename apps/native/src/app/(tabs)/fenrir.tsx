@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { HeaderAvatar } from "@/components/header-avatar";
 import { CrownBoldIcon } from "@/components/icons/solar/crown-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
 import { ShieldCheckBoldIcon } from "@/components/icons/solar/shield-check-bold";
@@ -48,6 +49,20 @@ export default function Fenrir() {
 
   return (
     <View className="flex-1 bg-background">
+      {/* Header overlay (above wolf) */}
+      <View
+        className="absolute right-0 left-0 z-10 flex-row items-center justify-between px-8"
+        style={{ paddingTop: insets.top + 16 }}
+      >
+        <View className="flex-row items-center rounded-full border border-border bg-card px-3.5 py-1.5">
+          <FireBoldIcon className="size-4 text-accent" />
+          <Text className="ml-1.5 font-semibold text-base text-foreground">
+            {streak}
+          </Text>
+        </View>
+        <HeaderAvatar name={state.userName} />
+      </View>
+
       {/* Wolf area */}
       <View
         className="items-center justify-end overflow-hidden"

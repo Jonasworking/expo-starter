@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { HeaderAvatar } from "@/components/header-avatar";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -285,8 +286,6 @@ export default function Today() {
     setSelectedId(null);
   }, [confirmDelete, deleteReflection]);
 
-  const userInitial = state.userName.charAt(0).toUpperCase();
-
   return (
     <View className="flex-1 bg-background">
       <ScrollView
@@ -309,15 +308,7 @@ export default function Today() {
             {getGreeting()}
           </Text>
 
-          <Pressable
-            className="size-12 items-center justify-center rounded-full bg-primary active:scale-95"
-            hitSlop={8}
-            onPress={() => router.push("/settings")}
-          >
-            <Text className="font-bold text-[18px] text-primary-foreground">
-              {userInitial}
-            </Text>
-          </Pressable>
+          <HeaderAvatar name={state.userName} />
         </View>
 
         {/* Week strip */}
