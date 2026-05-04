@@ -36,7 +36,7 @@ const EMBERS_PER_RANK = 300;
 export default function Fenrir() {
   const insets = useSafeAreaInsets();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const { state } = useAppState();
+  const { state, rollingStats } = useAppState();
   const { fenrir, streak } = state;
 
   const wolfAreaHeight = windowHeight * 0.48;
@@ -121,6 +121,31 @@ export default function Fenrir() {
           <Text className="text-[14px] text-primary-foreground/60">
             {fenrir.embersTowardNextRank} / {EMBERS_PER_RANK} Embers to next
             rank
+          </Text>
+        </View>
+
+        {/* Rolling completion */}
+        <View className="gap-3 rounded-[22px] border border-border bg-card p-6">
+          <View className="flex-row items-center justify-between">
+            <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+              Last 7 Days
+            </Text>
+            <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+              {rollingStats.pct}%
+            </Text>
+          </View>
+          <Text className="font-heading-bold text-[24px] text-foreground">
+            Sealed {rollingStats.completed} of {rollingStats.window} days
+          </Text>
+          <View className="h-2 w-full overflow-hidden rounded-full bg-muted">
+            <View
+              className="h-full rounded-full bg-primary"
+              style={{ width: `${rollingStats.pct}%` }}
+            />
+          </View>
+          <Text className="text-[13px] text-muted-foreground leading-relaxed">
+            A rolling window beats a brittle streak. Miss a day or two — the
+            path remains.
           </Text>
         </View>
 

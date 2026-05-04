@@ -185,12 +185,19 @@ const DEFAULT_STATE: AppStateData = {
   dailyPractices: DEFAULT_PRACTICES,
 };
 
+interface RollingStats {
+  completed: number;
+  window: number;
+  pct: number;
+}
+
 interface AppStateContextType {
   isLoaded: boolean;
   state: AppStateData;
   activeTrial: Trial | null;
   todaysPractices: DailyPractices;
   todaysVirtue: Virtue;
+  rollingStats: RollingStats;
   completeOnboarding: () => void;
   completeReflection: (text: string) => void;
   completeEveningReflection: (text: string) => void;
@@ -220,21 +227,49 @@ function toDateKey(date: Date = new Date()): string {
   return `${y}-${m}-${d}`;
 }
 
+// Tolerant streak: counts sealed days going backwards from today, but only
+// breaks the run after 3 consecutive missed days. Up to 2 gap days within a
+// run still count as a continuing streak (only sealed days are counted).
+const STREAK_MAX_GAP = 3;
+const STREAK_LOOKBACK_LIMIT = 365;
+
 function calculateStreak(days: Record<string, DayData>): number {
   let streak = 0;
+  let consecutiveMissed = 0;
   const checkDate = new Date();
-
-  while (true) {
+  for (let i = 0; i < STREAK_LOOKBACK_LIMIT; i++) {
     const key = toDateKey(checkDate);
     if (days[key]?.sealed) {
       streak++;
-      checkDate.setDate(checkDate.getDate() - 1);
+      consecutiveMissed = 0;
     } else {
-      break;
+      consecutiveMissed++;
+      if (consecutiveMissed >= STREAK_MAX_GAP) {
+        break;
+      }
     }
+    checkDate.setDate(checkDate.getDate() - 1);
   }
-
   return streak;
+}
+
+function rollingCompletion(
+  days: Record<string, DayData>,
+  windowDays = 7
+): { completed: number; window: number; pct: number } {
+  let completed = 0;
+  const checkDate = new Date();
+  for (let i = 0; i < windowDays; i++) {
+    if (days[toDateKey(checkDate)]?.sealed) {
+      completed++;
+    }
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+  return {
+    completed,
+    window: windowDays,
+    pct: Math.round((completed / windowDays) * 100),
+  };
 }
 
 function mergeWithDefaults(loaded: Partial<AppStateData>): AppStateData {
@@ -542,6 +577,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     return VIRTUES[new Date().getDay()];
   }, []);
 
+  const rollingStats = useMemo<RollingStats>(
+    () => rollingCompletion(state.days, 7),
+    [state.days]
+  );
+
   const value = useMemo<AppStateContextType>(
     () => ({
       isLoaded,
@@ -549,6 +589,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       activeTrial,
       todaysPractices,
       todaysVirtue,
+      rollingStats,
       completeOnboarding,
       completeReflection,
       completeEveningReflection,
@@ -568,6 +609,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       activeTrial,
       todaysPractices,
       todaysVirtue,
+      rollingStats,
       completeOnboarding,
       completeReflection,
       completeEveningReflection,
