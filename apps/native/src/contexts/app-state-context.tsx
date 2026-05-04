@@ -197,7 +197,7 @@ interface AppStateContextType {
   ) => void;
   deleteReflection: (dateKey: string, kind?: ReflectionKind) => void;
   completeTrial: () => void;
-  completePractice: (id: PracticeId) => void;
+  togglePractice: (id: PracticeId) => void;
   sealDay: () => void;
   resetProgress: () => void;
   setUserName: (name: string) => void;
@@ -249,15 +249,16 @@ function mergeWithDefaults(loaded: Partial<AppStateData>): AppStateData {
   };
 }
 
-function rewardEmbers(
+function adjustEmbers(
   fenrir: FenrirData,
-  amount: number
+  delta: number
 ): Pick<FenrirData, "rank" | "embersTowardNextRank"> {
-  const newEmbers = fenrir.embersTowardNextRank + amount;
-  const rankUp = newEmbers >= EMBERS_PER_RANK;
+  const totalBefore =
+    (fenrir.rank - 1) * EMBERS_PER_RANK + fenrir.embersTowardNextRank;
+  const totalAfter = Math.max(0, totalBefore + delta);
   return {
-    rank: rankUp ? fenrir.rank + 1 : fenrir.rank,
-    embersTowardNextRank: rankUp ? newEmbers - EMBERS_PER_RANK : newEmbers,
+    rank: Math.max(1, Math.floor(totalAfter / EMBERS_PER_RANK) + 1),
+    embersTowardNextRank: totalAfter % EMBERS_PER_RANK,
   };
 }
 
@@ -332,7 +333,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         dailyPractices: { ...practices, eveningReflection: true },
         fenrir: {
           ...prev.fenrir,
-          ...rewardEmbers(prev.fenrir, reward),
+          ...adjustEmbers(prev.fenrir, reward),
         },
       };
     });
@@ -406,7 +407,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         fenrir: {
           ...prev.fenrir,
           totalTrials: newTotalTrials,
-          ...rewardEmbers(prev.fenrir, 50),
+          ...adjustEmbers(prev.fenrir, 50),
           activeTrialIndex: nextTrialIndex,
           currentDayInTrial: nextDayInTrial,
         },
@@ -414,22 +415,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const completePractice = useCallback((id: PracticeId) => {
+  const togglePractice = useCallback((id: PracticeId) => {
     setState((prev) => {
       const today = toDateKey();
       const practices =
         prev.dailyPractices.date === today
           ? prev.dailyPractices
           : { ...DEFAULT_PRACTICES, date: today };
-      if (practices[id]) {
-        return prev;
-      }
+      const wasOn = practices[id];
+      const delta = wasOn ? -PRACTICE_REWARDS[id] : PRACTICE_REWARDS[id];
       return {
         ...prev,
-        dailyPractices: { ...practices, [id]: true },
+        dailyPractices: { ...practices, [id]: !wasOn },
         fenrir: {
           ...prev.fenrir,
-          ...rewardEmbers(prev.fenrir, PRACTICE_REWARDS[id]),
+          ...adjustEmbers(prev.fenrir, delta),
         },
       };
     });
@@ -507,7 +507,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       editReflection,
       deleteReflection,
       completeTrial,
-      completePractice,
+      togglePractice,
       sealDay,
       resetProgress,
       setUserName,
@@ -525,7 +525,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       editReflection,
       deleteReflection,
       completeTrial,
-      completePractice,
+      togglePractice,
       sealDay,
       resetProgress,
       setUserName,

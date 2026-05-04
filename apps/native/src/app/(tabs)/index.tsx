@@ -132,7 +132,7 @@ export default function Today() {
     todaysPractices,
     todaysVirtue,
     completeTrial,
-    completePractice,
+    togglePractice,
     deleteReflection,
   } = useAppState();
 
@@ -226,12 +226,28 @@ export default function Today() {
   const handlePracticeTap = useCallback(
     (id: PracticeId) => {
       if (id === "eveningReflection") {
+        const todayEvening = state.days[todayKey];
+        if (
+          todaysPractices.eveningReflection &&
+          todayEvening?.eveningReflected
+        ) {
+          // Already done — open the detail sheet for today's evening entry
+          setSelectedId(entryId({ dateKey: todayKey, kind: "evening" }));
+          detailSheetRef.current?.present();
+          return;
+        }
         presentComposer("evening");
         return;
       }
-      completePractice(id);
+      togglePractice(id);
     },
-    [completePractice, presentComposer]
+    [
+      togglePractice,
+      presentComposer,
+      state.days,
+      todayKey,
+      todaysPractices.eveningReflection,
+    ]
   );
 
   const handleOpenDetail = useCallback((entry: HistoryEntry) => {

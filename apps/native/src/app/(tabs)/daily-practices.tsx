@@ -96,8 +96,8 @@ export function DailyPracticesSection({
                   {row.title}
                 </Text>
                 <Text
-                  className="text-[13px] text-muted-foreground"
-                  numberOfLines={1}
+                  className="text-[13px] text-muted-foreground leading-relaxed"
+                  numberOfLines={2}
                 >
                   {row.description}
                 </Text>
