@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HeaderAvatar } from "@/components/header-avatar";
+import { CaretRightBoldIcon } from "@/components/icons/ph/caret-right-bold";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
 import { DotsThreeBoldIcon } from "@/components/icons/ph/dots-three-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
@@ -162,6 +163,7 @@ export default function Today() {
     kind: ReflectionKind;
   } | null>(null);
   const [confirmReroll, setConfirmReroll] = useState(false);
+  const [reflectionsExpanded, setReflectionsExpanded] = useState(false);
 
   const todayKey = toDateKey();
   const todayData = state.days[todayKey];
@@ -497,51 +499,71 @@ export default function Today() {
             practices={todaysPractices}
           />
 
-          {/* Reflection history */}
+          {/* Reflection history — collapsed by default to keep the home view
+              focused on today; tap the header to reveal recent entries. */}
           <View className="flex-col gap-3">
-            <Text className="px-2 font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
-              Past Reflections
-            </Text>
-            {reflectionHistory.length === 0 ? (
-              <View className="items-center rounded-[22px] border border-border border-dashed bg-card px-6 py-8">
-                <Text className="text-center font-medium text-[15px] text-muted-foreground leading-relaxed">
-                  Your reflections will appear here.{"\n"}Take a moment to
-                  reflect.
-                </Text>
-              </View>
-            ) : (
-              <View className="flex-col overflow-hidden rounded-[22px] border border-border bg-card">
-                {reflectionHistory.map((entry, index) => {
-                  const preview =
-                    entry.text.length > REFLECTION_PREVIEW_CHARS
-                      ? `${entry.text.slice(0, REFLECTION_PREVIEW_CHARS).trimEnd()}…`
-                      : entry.text;
-                  const isLast = index === reflectionHistory.length - 1;
-                  return (
-                    <Pressable
-                      className={`flex-col gap-1 px-5 py-4 active:bg-muted/50 ${isLast ? "" : "border-border border-b"}`}
-                      key={entryId(entry)}
-                      onPress={() => handleOpenDetail(entry)}
-                    >
-                      <View className="flex-row items-center gap-2">
-                        <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
-                          {formatReflectionDate(entry.dateKey)}
-                        </Text>
-                        <Text className="font-semibold text-[10px] text-muted-foreground/60 uppercase tracking-widest">
-                          · {entry.kind}
-                        </Text>
-                      </View>
-                      <Text
-                        className="font-medium text-[15px] text-foreground leading-relaxed"
-                        numberOfLines={2}
+            <Pressable
+              className="flex-row items-center justify-between px-2 active:opacity-60"
+              hitSlop={6}
+              onPress={() => setReflectionsExpanded((prev) => !prev)}
+            >
+              <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+                Past Reflections
+                {reflectionHistory.length > 0
+                  ? ` (${reflectionHistory.length})`
+                  : ""}
+              </Text>
+              <CaretRightBoldIcon
+                className="size-3 text-muted-foreground"
+                style={{
+                  transform: [
+                    { rotate: reflectionsExpanded ? "90deg" : "0deg" },
+                  ],
+                }}
+              />
+            </Pressable>
+            {reflectionsExpanded ? (
+              reflectionHistory.length === 0 ? (
+                <View className="items-center rounded-[22px] border border-border border-dashed bg-card px-6 py-8">
+                  <Text className="text-center font-medium text-[15px] text-muted-foreground leading-relaxed">
+                    Your reflections will appear here.{"\n"}Take a moment to
+                    reflect.
+                  </Text>
+                </View>
+              ) : (
+                <View className="flex-col overflow-hidden rounded-[22px] border border-border bg-card">
+                  {reflectionHistory.map((entry, index) => {
+                    const preview =
+                      entry.text.length > REFLECTION_PREVIEW_CHARS
+                        ? `${entry.text.slice(0, REFLECTION_PREVIEW_CHARS).trimEnd()}…`
+                        : entry.text;
+                    const isLast = index === reflectionHistory.length - 1;
+                    return (
+                      <Pressable
+                        className={`flex-col gap-1 px-5 py-4 active:bg-muted/50 ${isLast ? "" : "border-border border-b"}`}
+                        key={entryId(entry)}
+                        onPress={() => handleOpenDetail(entry)}
                       >
-                        {preview}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
+                        <View className="flex-row items-center gap-2">
+                          <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+                            {formatReflectionDate(entry.dateKey)}
+                          </Text>
+                          <Text className="font-semibold text-[10px] text-muted-foreground/60 uppercase tracking-widest">
+                            · {entry.kind}
+                          </Text>
+                        </View>
+                        <Text
+                          className="font-medium text-[15px] text-foreground leading-relaxed"
+                          numberOfLines={2}
+                        >
+                          {preview}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )
+            ) : null}
           </View>
         </View>
       </ScrollView>
