@@ -119,14 +119,14 @@ type PracticeIconName =
   | "pencil"
   | "shield";
 
-type PracticeCategory = "stillness" | "virtue" | "reflection" | "body" | "mind";
+type PracticeCategory = "virtue" | "body" | "mind" | "stillness";
 
 interface Practice {
   id: string;
   title: string;
   description: string;
   icon: PracticeIconName;
-  embers: 10 | 15;
+  embers: 10 | 15 | 20 | 25 | 30;
   category: PracticeCategory;
   /**
    * Tapping this practice opens the evening reflection sheet rather than
@@ -135,19 +135,83 @@ interface Practice {
   opensReflection?: boolean;
 }
 
-// Stillness + virtues earn 10 embers; reflection, body, and mind earn 15 —
-// per the design brief that physical and cognitive practices warrant a
-// larger ember reward than meditative ones.
-//
-// Order in this pool is significant for the selection screen: stillness
-// must come first so the screen renders STILLNESS & MEDITATION as the
-// opening category. Don't reorder these blocks without also reviewing
-// SELECTABLE_CATEGORIES below.
 const PRACTICE_POOL: readonly Practice[] = [
-  // ── STILLNESS & MEDITATION ────────────────────────────────────────────
-  // Four contemplative practices. Walking meditation lives under BODY
-  // because the physical movement is its primary surface; "in silence"
-  // is the modifier, not the act.
+  // Virtue
+  {
+    id: "wisdom",
+    title: "Wisdom",
+    description: "Learn one thing today. Write it down.",
+    icon: "scales",
+    embers: 15,
+    category: "virtue",
+  },
+  {
+    id: "courage",
+    title: "Courage",
+    description: "Do the thing you avoid.",
+    icon: "scales",
+    embers: 25,
+    category: "virtue",
+  },
+  {
+    id: "justice",
+    title: "Justice",
+    description: "Do one good thing today.",
+    icon: "scales",
+    embers: 15,
+    category: "virtue",
+  },
+  // Body
+  {
+    id: "cold_shower",
+    title: "Cold Shower",
+    description: "Stand in the cold. Don't flinch.",
+    icon: "wind",
+    embers: 25,
+    category: "body",
+  },
+  {
+    id: "pushups",
+    title: "20 Push-Ups",
+    description: "Build the temple.",
+    icon: "bolt",
+    embers: 15,
+    category: "body",
+  },
+  {
+    id: "fast_16h",
+    title: "16h Fast",
+    description: "Hunger sharpens.",
+    icon: "shield",
+    embers: 30,
+    category: "body",
+  },
+  // Mind
+  {
+    id: "read_30",
+    title: "Read 30 min",
+    description: "No screens. Pages only.",
+    icon: "pencil",
+    embers: 20,
+    category: "mind",
+  },
+  {
+    id: "hardest_first",
+    title: "Hardest First",
+    description: "Do the worst task at sunrise.",
+    icon: "bolt",
+    embers: 30,
+    category: "mind",
+  },
+  {
+    id: "no_phone_hour",
+    title: "No Phone Hour",
+    description: "One hour. No screen. No exception.",
+    icon: "shield",
+    embers: 20,
+    category: "mind",
+  },
+  // Stillness
   {
     id: "silence",
     title: "5 min Silence",
@@ -157,130 +221,20 @@ const PRACTICE_POOL: readonly Practice[] = [
     category: "stillness",
   },
   {
-    id: "memento_mori",
-    title: "Memento Mori",
-    description: "Reflect on mortality. Live with intention.",
-    icon: "skull",
-    embers: 10,
-    category: "stillness",
-  },
-  {
-    id: "box_breathing",
-    title: "Box Breathing",
-    description: "4-4-4-4. Calm the mind.",
-    icon: "wind",
-    embers: 10,
-    category: "stillness",
-  },
-  {
-    id: "body_scan",
-    title: "Body Scan",
-    description: "Notice. Don't judge.",
-    icon: "wind",
-    embers: 10,
-    category: "stillness",
-  },
-  // Virtues
-  {
-    id: "wisdom",
-    title: "Practice Wisdom",
-    description: "Learn something new today.",
-    icon: "scales",
-    embers: 10,
-    category: "virtue",
-  },
-  {
-    id: "courage",
-    title: "Practice Courage",
-    description: "Do the hard thing.",
-    icon: "scales",
-    embers: 10,
-    category: "virtue",
-  },
-  {
-    id: "justice",
-    title: "Practice Justice",
-    description: "Help someone today.",
-    icon: "scales",
-    embers: 10,
-    category: "virtue",
-  },
-  {
-    id: "temperance",
-    title: "Practice Temperance",
-    description: "Practice restraint.",
-    icon: "scales",
-    embers: 10,
-    category: "virtue",
-  },
-  // Reflection — Evening Reflection is intentionally NOT in this pool. It
-  // has its own dedicated card on Today and runs through the bottom sheet,
-  // so duplicating it here would let users pick it twice.
-  {
     id: "gratitude",
     title: "Gratitude",
-    description: "Three things you're grateful for.",
+    description: "Three things. No more, no less.",
     icon: "moon",
-    embers: 15,
-    category: "reflection",
+    embers: 10,
+    category: "stillness",
   },
   {
-    id: "negative_visualization",
-    title: "Negative Visualization",
-    description: "Imagine what could go wrong. Be prepared.",
+    id: "vision_practice",
+    title: "Vision Practice",
+    description: "Imagine giving everything. See the life unfold.",
     icon: "skull",
     embers: 15,
-    category: "reflection",
-  },
-  // Body
-  {
-    id: "cold_exposure",
-    title: "Cold Exposure",
-    description: "Embrace the cold.",
-    icon: "wind",
-    embers: 15,
-    category: "body",
-  },
-  {
-    id: "pushups",
-    title: "20 Push-Ups",
-    description: "Build the body.",
-    icon: "bolt",
-    embers: 15,
-    category: "body",
-  },
-  {
-    id: "walk_silence",
-    title: "Walk in Silence",
-    description: "Move with intention.",
-    icon: "wind",
-    embers: 15,
-    category: "body",
-  },
-  // Mind
-  {
-    id: "read_30",
-    title: "Read 30 min",
-    description: "Feed the mind.",
-    icon: "pencil",
-    embers: 15,
-    category: "mind",
-  },
-  {
-    id: "write",
-    title: "Write",
-    description: "Process. Clarify.",
-    icon: "pencil",
-    embers: 15,
-    category: "mind",
-  },
-  {
-    id: "single_task",
-    title: "Single-Tasking",
-    description: "One thing at a time.",
-    icon: "shield",
-    embers: 15,
-    category: "mind",
+    category: "stillness",
   },
 ] as const;
 

@@ -34,20 +34,17 @@ const ICON_MAP: Record<PracticeIconName, IconComponent> = {
 };
 
 const CATEGORY_LABELS: Record<PracticeCategory, string> = {
-  stillness: "Stillness & Meditation",
-  virtue: "Virtues",
-  reflection: "Reflection",
+  virtue: "Virtue",
   body: "Body",
   mind: "Mind",
+  stillness: "Stillness",
 };
 
-// Selection enforces one practice per category. Mind is intentionally not
-// part of the selection flow — the user picks one from each of these four.
 const SELECTABLE_CATEGORIES: readonly PracticeCategory[] = [
-  "stillness",
   "virtue",
-  "reflection",
   "body",
+  "mind",
+  "stillness",
 ];
 
 type Selection = Partial<Record<PracticeCategory, string>>;
