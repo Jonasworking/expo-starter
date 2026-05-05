@@ -11,15 +11,30 @@ import { PlayfairDisplay_400Regular_Italic } from "@expo-google-fonts/playfair-d
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { PortalHost } from "@rn-primitives/portal";
 import { useFonts } from "expo-font";
+import { Image as ExpoImage } from "expo-image";
 import { Stack } from "expo-router";
 import { hideAsync, preventAutoHideAsync } from "expo-splash-screen";
 import { useEffect } from "react";
+import { Image as RNImage } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { AppStateProvider } from "@/contexts/app-state-context";
 import { AppThemeProvider } from "@/contexts/app-theme-context";
 
 preventAutoHideAsync();
+
+// Bundled assets — resolved to URIs at module load so the Layout effect can
+// hand them straight to expo-image's prefetch (which only accepts strings).
+const FENRIR_WOLF_URIS = [
+  require("../../assets/fenrir/wolf_idle.png"),
+  require("../../assets/fenrir/wolf_battle.png"),
+  require("../../assets/fenrir/wolf_levelup.png"),
+  require("../../assets/fenrir/wolf_sad.png"),
+  require("../../assets/fenrir/wolf_sleeping.png"),
+  require("../../assets/fenrir/wolf_level20.png"),
+]
+  .map((src) => RNImage.resolveAssetSource(src)?.uri)
+  .filter((uri): uri is string => Boolean(uri));
 
 export const unstable_settings = {
   initialRouteName: "index",
@@ -62,6 +77,13 @@ export default function Layout() {
       hideAsync();
     }
   }, [fontsLoaded]);
+
+  useEffect(() => {
+    ExpoImage.prefetch(FENRIR_WOLF_URIS, "memory-disk").catch((_err) => {
+      // Prefetch failures are non-fatal — the Fenrir tab will load images on
+      // demand. Silently swallow so we don't surface noisy network errors.
+    });
+  }, []);
 
   if (!fontsLoaded) {
     return null;

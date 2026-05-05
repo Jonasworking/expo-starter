@@ -95,7 +95,7 @@ export default function Fenrir() {
           priority="high"
           source={wolfImage}
           style={{ width: wolfWidth, height: wolfHeight }}
-          transition={200}
+          transition={150}
         />
 
         {/* Speech bubble */}
