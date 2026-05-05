@@ -14,8 +14,8 @@ import { WindBoldIcon } from "@/components/icons/ph/wind-bold";
 import { BoltBoldIcon } from "@/components/icons/solar/bolt-bold";
 import { Text } from "@/components/ui/text";
 import {
+  findPractice,
   PRACTICE_POOL,
-  PRACTICES_PER_DAY,
   type Practice,
   type PracticeCategory,
   type PracticeIconName,
@@ -42,22 +42,45 @@ const CATEGORY_LABELS: Record<PracticeCategory, string> = {
   mind: "Mind",
 };
 
-const CATEGORY_ORDER: readonly PracticeCategory[] = [
+// Selection enforces one practice per category. Mind is intentionally not
+// part of the selection flow — the user picks one from each of these four.
+const SELECTABLE_CATEGORIES: readonly PracticeCategory[] = [
   "stillness",
   "virtue",
   "reflection",
   "body",
-  "mind",
 ];
+
+type Selection = Partial<Record<PracticeCategory, string>>;
+
+function deriveInitialSelection(ids: readonly string[]): Selection {
+  const init: Selection = {};
+  for (const id of ids) {
+    const practice = findPractice(id);
+    if (!practice) {
+      continue;
+    }
+    if (!SELECTABLE_CATEGORIES.includes(practice.category)) {
+      continue;
+    }
+    if (init[practice.category]) {
+      continue;
+    }
+    init[practice.category] = id;
+  }
+  return init;
+}
 
 export default function PracticeSelect() {
   const insets = useSafeAreaInsets();
   const { todaysPractices, selectTodaysPractices } = useAppState();
-  const [picked, setPicked] = useState<string[]>(todaysPractices.selectedIds);
+  const [selection, setSelection] = useState<Selection>(() =>
+    deriveInitialSelection(todaysPractices.selectedIds)
+  );
 
   const grouped = useMemo(() => {
     const map = new Map<PracticeCategory, Practice[]>();
-    for (const cat of CATEGORY_ORDER) {
+    for (const cat of SELECTABLE_CATEGORIES) {
       map.set(cat, []);
     }
     for (const practice of PRACTICE_POOL) {
@@ -66,25 +89,32 @@ export default function PracticeSelect() {
     return map;
   }, []);
 
-  const togglePick = (id: string) => {
-    setPicked((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((x) => x !== id);
+  // Replacement, not blocking: tapping a different practice in the same
+  // category swaps it in. Tapping the already-selected practice clears the
+  // slot so the user can re-pick later.
+  const togglePick = (practice: Practice) => {
+    setSelection((prev) => {
+      if (prev[practice.category] === practice.id) {
+        const { [practice.category]: _cleared, ...rest } = prev;
+        return rest;
       }
-      if (prev.length >= PRACTICES_PER_DAY) {
-        return prev;
-      }
-      return [...prev, id];
+      return { ...prev, [practice.category]: practice.id };
     });
   };
 
-  const canConfirm = picked.length === PRACTICES_PER_DAY;
+  const filledCount = SELECTABLE_CATEGORIES.filter((cat) =>
+    Boolean(selection[cat])
+  ).length;
+  const canConfirm = filledCount === SELECTABLE_CATEGORIES.length;
 
   const handleConfirm = () => {
     if (!canConfirm) {
       return;
     }
-    selectTodaysPractices(picked);
+    const ids = SELECTABLE_CATEGORIES.map((cat) => selection[cat]).filter(
+      (id): id is string => Boolean(id)
+    );
+    selectTodaysPractices(ids);
     router.back();
   };
 
@@ -119,36 +149,41 @@ export default function PracticeSelect() {
       >
         <View className="flex-row items-center justify-between gap-4 px-1">
           <Text className="flex-1 font-medium text-[15px] text-muted-foreground leading-relaxed">
-            Pick {PRACTICES_PER_DAY} for today.
+            Pick one from each category.
           </Text>
           <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
-            {picked.length} of {PRACTICES_PER_DAY}
+            {filledCount} of {SELECTABLE_CATEGORIES.length}
           </Text>
         </View>
 
-        {CATEGORY_ORDER.map((category) => {
+        {SELECTABLE_CATEGORIES.map((category) => {
           const items = grouped.get(category) ?? [];
           if (items.length === 0) {
             return null;
           }
+          const categorySelectedId = selection[category];
           return (
             <View className="flex-col gap-3" key={category}>
-              <Text className="px-2 font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
-                {CATEGORY_LABELS[category]}
-              </Text>
+              <View className="flex-row items-center justify-between px-2">
+                <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
+                  {CATEGORY_LABELS[category]}
+                </Text>
+                <Text
+                  className={`font-semibold text-[12px] uppercase tracking-widest ${categorySelectedId ? "text-foreground" : "text-muted-foreground/60"}`}
+                >
+                  {categorySelectedId ? "1" : "0"} of 1
+                </Text>
+              </View>
               <View className="flex-col overflow-hidden rounded-[22px] border border-border bg-card">
                 {items.map((practice, index) => {
-                  const isSelected = picked.includes(practice.id);
+                  const isSelected = categorySelectedId === practice.id;
                   const isLast = index === items.length - 1;
                   const Icon = ICON_MAP[practice.icon];
-                  const disabled =
-                    !isSelected && picked.length >= PRACTICES_PER_DAY;
                   return (
                     <Pressable
-                      className={`flex-row items-center gap-4 px-5 py-4 active:bg-muted/50 ${isLast ? "" : "border-border border-b"} ${disabled ? "opacity-40" : ""}`}
-                      disabled={disabled}
+                      className={`flex-row items-center gap-4 px-5 py-4 active:bg-muted/50 ${isLast ? "" : "border-border border-b"}`}
                       key={practice.id}
-                      onPress={() => togglePick(practice.id)}
+                      onPress={() => togglePick(practice)}
                     >
                       <View className="size-10 items-center justify-center rounded-full bg-muted">
                         <Icon className="size-5 text-foreground" />
@@ -191,9 +226,7 @@ export default function PracticeSelect() {
           style={{ opacity: canConfirm ? 1 : 0.5 }}
         >
           <Text className="font-semibold text-[17px] text-primary-foreground">
-            {canConfirm
-              ? "Confirm Selection"
-              : `Pick ${PRACTICES_PER_DAY - picked.length} to continue`}
+            {canConfirm ? "Confirm Selection" : "Pick one from each"}
           </Text>
         </Pressable>
       </View>
