@@ -8,6 +8,10 @@
     },
     "name": "expo-starter",
     "slug": "expo-starter",
+    "icon": "./assets/images/icon.png",
+    "ios": {
+      "icon": "./assets/images/icon.png"
+    },
     "plugins": ["expo-font", "expo-notifications"],
     "experiments": {
       "typedRoutes": true,
