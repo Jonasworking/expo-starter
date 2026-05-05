@@ -321,23 +321,34 @@ export default function Today() {
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
+        {/* Header — fixed-width side slots so the greeting in the middle never
+            fights for space and the avatar can't clip off-screen. */}
         <View
-          className="flex-row items-center justify-between px-8"
+          className="flex-row items-center px-6"
           style={{ paddingTop: insets.top + 16, height: insets.top + 64 }}
         >
-          <Pressable className="flex-row items-center rounded-full border border-border bg-card px-3.5 py-1.5">
-            <FireBoldIcon className="size-4 text-accent" />
-            <Text className="ml-1.5 font-semibold text-base text-foreground">
-              {state.streak}
+          <View className="w-16 items-start">
+            <View className="flex-row items-center rounded-full border border-border bg-card px-3 py-1.5">
+              <FireBoldIcon className="size-4 text-accent" />
+              <Text className="ml-1.5 font-semibold text-[15px] text-foreground">
+                {state.streak}
+              </Text>
+            </View>
+          </View>
+
+          <View className="flex-1 items-center px-2">
+            <Text
+              adjustsFontSizeToFit
+              className="font-heading-bold text-[26px] text-foreground"
+              numberOfLines={1}
+            >
+              {getGreeting()}
             </Text>
-          </Pressable>
+          </View>
 
-          <Text className="font-heading-bold text-[32px] text-foreground">
-            {getGreeting()}
-          </Text>
-
-          <HeaderAvatar name={state.userName} />
+          <View className="w-16 items-end">
+            <HeaderAvatar name={state.userName} />
+          </View>
         </View>
 
         {/* Week strip */}
@@ -502,7 +513,7 @@ export default function Today() {
             </Text>
             {reflectionHistory.length === 0 ? (
               <View className="items-center rounded-[22px] border border-border border-dashed bg-card px-6 py-8">
-                <Text className="text-center text-[15px] text-muted-foreground leading-relaxed">
+                <Text className="text-center font-medium text-[15px] text-muted-foreground leading-relaxed">
                   Your reflections will appear here.{"\n"}Take a moment to
                   reflect.
                 </Text>
@@ -530,7 +541,7 @@ export default function Today() {
                         </Text>
                       </View>
                       <Text
-                        className="text-[15px] text-foreground leading-relaxed"
+                        className="font-medium text-[15px] text-foreground leading-relaxed"
                         numberOfLines={2}
                       >
                         {preview}
