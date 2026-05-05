@@ -1,5 +1,11 @@
 import { Image } from "expo-image";
-import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
+import {
+  Platform,
+  ScrollView,
+  type TextStyle,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HeaderAvatar } from "@/components/header-avatar";
 import { CrownBoldIcon } from "@/components/icons/solar/crown-bold";
@@ -101,7 +107,7 @@ export default function Fenrir() {
             // which lets the browser drop a blinking caret here. The bubble
             // is decorative — disable selection and hide any caret on web.
             style={Platform.select({
-              web: { caretColor: "transparent" },
+              web: { caretColor: "transparent" } as TextStyle,
               default: undefined,
             })}
           >
