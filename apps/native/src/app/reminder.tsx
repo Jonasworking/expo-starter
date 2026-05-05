@@ -1,10 +1,11 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeftIcon } from "@/components/icons/ph/arrow-left";
 import { Text } from "@/components/ui/text";
 import { useAppState } from "@/contexts/app-state-context";
+import { useThemeColor } from "@/lib/theme/use-theme-color";
 
 const HOUR_MIN = 0;
 const HOUR_MAX = 23;
@@ -21,13 +22,16 @@ const wrap = (value: number, min: number, max: number) => {
 
 export default function Reminder() {
   const insets = useSafeAreaInsets();
-  const { state, setReminderTime } = useAppState();
+  const { state, setReminderTime, setReminderEnabled } = useAppState();
   const [hourStr, minuteStr] = state.reminderTime.split(":");
   const [hour, setHour] = useState<number>(Number(hourStr) || 0);
   const [minute, setMinute] = useState<number>(Number(minuteStr) || 0);
+  const [enabled, setEnabled] = useState<boolean>(state.reminderEnabled);
+  const [primary, muted] = useThemeColor(["primary", "muted"]);
 
   const handleSave = () => {
     setReminderTime(`${pad(hour)}:${pad(minute)}`);
+    setReminderEnabled(enabled);
     router.back();
   };
 
@@ -47,12 +51,28 @@ export default function Reminder() {
       </View>
 
       <View className="flex-1 items-center px-8">
-        <Text className="mt-4 mb-12 text-center text-[15px] text-muted-foreground">
+        <Text className="mt-4 mb-8 text-center font-medium text-[15px] text-muted-foreground">
           Choose when Fenrir should remind you to begin the day.
         </Text>
 
-        <View className="flex-row items-center justify-center gap-6">
+        <View className="mb-12 w-full flex-row items-center justify-between rounded-[18px] border border-border bg-card px-5 py-4">
+          <Text className="font-medium text-[15px] text-foreground">
+            Daily reminder
+          </Text>
+          <Switch
+            onValueChange={setEnabled}
+            thumbColor="#ffffff"
+            trackColor={{ false: muted, true: primary }}
+            value={enabled}
+          />
+        </View>
+
+        <View
+          className="flex-row items-center justify-center gap-6"
+          style={{ opacity: enabled ? 1 : 0.4 }}
+        >
           <TimeColumn
+            disabled={!enabled}
             label="Hour"
             onChange={(next) => setHour(wrap(next, HOUR_MIN, HOUR_MAX))}
             value={hour}
@@ -61,6 +81,7 @@ export default function Reminder() {
             :
           </Text>
           <TimeColumn
+            disabled={!enabled}
             label="Minute"
             onChange={(next) => setMinute(wrap(next, MINUTE_MIN, MINUTE_MAX))}
             step={MINUTE_STEP}
@@ -91,16 +112,19 @@ function TimeColumn({
   onChange,
   step = 1,
   value,
+  disabled = false,
 }: {
   label: string;
   onChange: (next: number) => void;
   step?: number;
   value: number;
+  disabled?: boolean;
 }) {
   return (
     <View className="items-center gap-3">
       <Pressable
         className="size-12 items-center justify-center rounded-full border border-border bg-card active:scale-95"
+        disabled={disabled}
         hitSlop={8}
         onPress={() => onChange(value + step)}
       >
@@ -118,6 +142,7 @@ function TimeColumn({
 
       <Pressable
         className="size-12 items-center justify-center rounded-full border border-border bg-card active:scale-95"
+        disabled={disabled}
         hitSlop={8}
         onPress={() => onChange(value - step)}
       >

@@ -82,7 +82,7 @@ export default function Settings() {
             </View>
             <View className="flex-row items-center gap-2">
               <Text className="text-base text-muted-foreground">
-                {state.reminderTime}
+                {state.reminderEnabled ? state.reminderTime : "Off"}
               </Text>
               <CaretRightBoldIcon className="size-4 text-muted-foreground" />
             </View>

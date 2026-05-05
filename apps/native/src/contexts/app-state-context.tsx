@@ -6,8 +6,13 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
+import {
+  cancelDailyReminder,
+  scheduleDailyReminder,
+} from "@/lib/notifications";
 
 const STORAGE_KEY = "ronin-app-state-v1";
 const EMBERS_PER_RANK = 300;
@@ -185,6 +190,7 @@ interface AppStateData {
   hasOnboarded: boolean;
   userName: string;
   reminderTime: string;
+  reminderEnabled: boolean;
   streak: number;
   days: Record<string, DayData>;
   fenrir: FenrirData;
@@ -195,6 +201,7 @@ const DEFAULT_STATE: AppStateData = {
   hasOnboarded: false,
   userName: "Warrior",
   reminderTime: "08:00",
+  reminderEnabled: true,
   streak: 0,
   days: {},
   fenrir: {
@@ -239,6 +246,7 @@ interface AppStateContextType {
   resetProgress: () => void;
   setUserName: (name: string) => void;
   setReminderTime: (time: string) => void;
+  setReminderEnabled: (enabled: boolean) => void;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(
@@ -644,6 +652,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       hasOnboarded: true,
       userName: prev.userName,
       reminderTime: prev.reminderTime,
+      reminderEnabled: prev.reminderEnabled,
     }));
   }, []);
 
@@ -654,6 +663,38 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const setReminderTime = useCallback((time: string) => {
     setState((prev) => ({ ...prev, reminderTime: time }));
   }, []);
+
+  const setReminderEnabled = useCallback((enabled: boolean) => {
+    setState((prev) => ({ ...prev, reminderEnabled: enabled }));
+  }, []);
+
+  // Keep the OS-scheduled reminder in sync with reminderTime + enabled. First
+  // schedule prompts for permission; later changes silently re-schedule. We
+  // skip the welcome screen so the permission dialog doesn't appear before
+  // the user has committed to using the app.
+  const lastScheduledRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    if (!state.hasOnboarded) {
+      return;
+    }
+    const key = state.reminderEnabled ? state.reminderTime : "off";
+    if (lastScheduledRef.current === key) {
+      return;
+    }
+    lastScheduledRef.current = key;
+    if (state.reminderEnabled) {
+      scheduleDailyReminder(state.reminderTime).catch((_err) => {
+        // Permission denied or platform unavailable — leave silently.
+      });
+    } else {
+      cancelDailyReminder().catch((_err) => {
+        // No scheduled reminder — fine.
+      });
+    }
+  }, [isLoaded, state.hasOnboarded, state.reminderTime, state.reminderEnabled]);
 
   const activeTrial = useMemo<Trial | null>(
     () =>
@@ -706,6 +747,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       resetProgress,
       setUserName,
       setReminderTime,
+      setReminderEnabled,
     }),
     [
       isLoaded,
@@ -727,6 +769,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       resetProgress,
       setUserName,
       setReminderTime,
+      setReminderEnabled,
     ]
   );
 
