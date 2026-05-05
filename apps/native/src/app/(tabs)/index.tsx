@@ -321,7 +321,7 @@ export default function Today() {
           style={{ paddingTop: insets.top + 16, height: insets.top + 64 }}
         >
           <View className="w-16 items-start">
-            <View className="flex-row items-center rounded-full border border-border bg-card px-3 py-1.5">
+            <View className="flex-row items-center rounded-full bg-card px-3 py-1.5">
               <FireBoldIcon className="size-4 text-accent" />
               <Text className="ml-1.5 font-semibold text-[15px] text-foreground">
                 {state.streak}
