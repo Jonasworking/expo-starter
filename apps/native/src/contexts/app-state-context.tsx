@@ -108,30 +108,197 @@ const VIRTUES: readonly Virtue[] = [
   },
 ] as const;
 
-type PracticeId = "silence" | "mementoMori" | "virtue" | "eveningReflection";
 type ReflectionKind = "morning" | "evening";
 
-const PRACTICE_REWARDS: Record<PracticeId, number> = {
-  silence: 10,
-  mementoMori: 10,
-  virtue: 15,
-  eveningReflection: 15,
-};
+type PracticeIconName =
+  | "wind"
+  | "skull"
+  | "scales"
+  | "moon"
+  | "bolt"
+  | "pencil"
+  | "shield";
+
+type PracticeCategory = "stillness" | "virtue" | "reflection" | "body" | "mind";
+
+interface Practice {
+  id: string;
+  title: string;
+  description: string;
+  icon: PracticeIconName;
+  embers: 10 | 15;
+  category: PracticeCategory;
+  /**
+   * Tapping this practice opens the evening reflection sheet rather than
+   * toggling completion directly — completion follows the reflection state.
+   */
+  opensReflection?: boolean;
+}
+
+// Stillness + virtues earn 10 embers; reflection, body, and mind earn 15 —
+// per the design brief that physical and cognitive practices warrant a
+// larger ember reward than meditative ones.
+const PRACTICE_POOL: readonly Practice[] = [
+  // Stillness & Meditation
+  {
+    id: "silence",
+    title: "5 min Silence",
+    description: "Sit. Breathe. Observe.",
+    icon: "wind",
+    embers: 10,
+    category: "stillness",
+  },
+  {
+    id: "memento_mori",
+    title: "Memento Mori",
+    description: "Reflect on mortality. Live with intention.",
+    icon: "skull",
+    embers: 10,
+    category: "stillness",
+  },
+  {
+    id: "box_breathing",
+    title: "Box Breathing",
+    description: "4-4-4-4. Calm the mind.",
+    icon: "wind",
+    embers: 10,
+    category: "stillness",
+  },
+  {
+    id: "body_scan",
+    title: "Body Scan",
+    description: "Notice. Don't judge.",
+    icon: "wind",
+    embers: 10,
+    category: "stillness",
+  },
+  // Virtues
+  {
+    id: "wisdom",
+    title: "Practice Wisdom",
+    description: "Learn something new today.",
+    icon: "scales",
+    embers: 10,
+    category: "virtue",
+  },
+  {
+    id: "courage",
+    title: "Practice Courage",
+    description: "Do the hard thing.",
+    icon: "scales",
+    embers: 10,
+    category: "virtue",
+  },
+  {
+    id: "justice",
+    title: "Practice Justice",
+    description: "Help someone today.",
+    icon: "scales",
+    embers: 10,
+    category: "virtue",
+  },
+  {
+    id: "temperance",
+    title: "Practice Temperance",
+    description: "Practice restraint.",
+    icon: "scales",
+    embers: 10,
+    category: "virtue",
+  },
+  // Reflection
+  {
+    id: "evening_reflection",
+    title: "Evening Reflection",
+    description: "What did you do well today?",
+    icon: "moon",
+    embers: 15,
+    category: "reflection",
+    opensReflection: true,
+  },
+  {
+    id: "gratitude",
+    title: "Gratitude",
+    description: "Three things you're grateful for.",
+    icon: "moon",
+    embers: 15,
+    category: "reflection",
+  },
+  {
+    id: "negative_visualization",
+    title: "Negative Visualization",
+    description: "Imagine what could go wrong. Be prepared.",
+    icon: "skull",
+    embers: 15,
+    category: "reflection",
+  },
+  // Body
+  {
+    id: "cold_exposure",
+    title: "Cold Exposure",
+    description: "Embrace the cold.",
+    icon: "wind",
+    embers: 15,
+    category: "body",
+  },
+  {
+    id: "pushups",
+    title: "20 Push-Ups",
+    description: "Build the body.",
+    icon: "bolt",
+    embers: 15,
+    category: "body",
+  },
+  {
+    id: "walk_silence",
+    title: "Walk in Silence",
+    description: "Move with intention.",
+    icon: "wind",
+    embers: 15,
+    category: "body",
+  },
+  // Mind
+  {
+    id: "read_30",
+    title: "Read 30 min",
+    description: "Feed the mind.",
+    icon: "pencil",
+    embers: 15,
+    category: "mind",
+  },
+  {
+    id: "write",
+    title: "Write",
+    description: "Process. Clarify.",
+    icon: "pencil",
+    embers: 15,
+    category: "mind",
+  },
+  {
+    id: "single_task",
+    title: "Single-Tasking",
+    description: "One thing at a time.",
+    icon: "shield",
+    embers: 15,
+    category: "mind",
+  },
+] as const;
+
+const PRACTICES_PER_DAY = 4;
+
+function findPractice(id: string): Practice | undefined {
+  return PRACTICE_POOL.find((p) => p.id === id);
+}
 
 interface DailyPractices {
   date: string;
-  silence: boolean;
-  mementoMori: boolean;
-  virtue: boolean;
-  eveningReflection: boolean;
+  selectedIds: string[];
+  completedIds: string[];
 }
 
 const DEFAULT_PRACTICES: DailyPractices = {
   date: "",
-  silence: false,
-  mementoMori: false,
-  virtue: false,
-  eveningReflection: false,
+  selectedIds: [],
+  completedIds: [],
 };
 
 interface DayData {
@@ -241,7 +408,8 @@ interface AppStateContextType {
   deleteReflection: (dateKey: string, kind?: ReflectionKind) => void;
   completeTrial: () => void;
   selectTrial: (id: string, opts?: { reroll?: boolean }) => void;
-  togglePractice: (id: PracticeId) => void;
+  togglePractice: (id: string) => void;
+  selectTodaysPractices: (ids: string[]) => void;
   sealDay: () => void;
   resetProgress: () => void;
   setUserName: (name: string) => void;
@@ -317,6 +485,60 @@ function rollingCompletion(
   };
 }
 
+type LegacyDailyPractices = Partial<DailyPractices> & {
+  silence?: boolean;
+  mementoMori?: boolean;
+  virtue?: boolean;
+  eveningReflection?: boolean;
+};
+
+function migratePractices(loaded: LegacyDailyPractices): DailyPractices {
+  if (Array.isArray(loaded.selectedIds)) {
+    return {
+      date: loaded.date ?? "",
+      selectedIds: loaded.selectedIds,
+      completedIds: Array.isArray(loaded.completedIds)
+        ? loaded.completedIds
+        : [],
+    };
+  }
+  // Legacy shape: four hard-coded practices with boolean flags. Map them onto
+  // the new selection model so old users don't lose today's progress.
+  const hasLegacy =
+    typeof loaded.silence === "boolean" ||
+    typeof loaded.mementoMori === "boolean" ||
+    typeof loaded.virtue === "boolean" ||
+    typeof loaded.eveningReflection === "boolean";
+  if (!hasLegacy) {
+    return { ...DEFAULT_PRACTICES };
+  }
+  const legacyVirtueId = VIRTUES[new Date().getDay()].id;
+  const selectedIds = [
+    "silence",
+    "memento_mori",
+    legacyVirtueId,
+    "evening_reflection",
+  ];
+  const completedIds: string[] = [];
+  if (loaded.silence) {
+    completedIds.push("silence");
+  }
+  if (loaded.mementoMori) {
+    completedIds.push("memento_mori");
+  }
+  if (loaded.virtue) {
+    completedIds.push(legacyVirtueId);
+  }
+  if (loaded.eveningReflection) {
+    completedIds.push("evening_reflection");
+  }
+  return {
+    date: loaded.date ?? toDateKey(),
+    selectedIds,
+    completedIds,
+  };
+}
+
 function mergeWithDefaults(loaded: Partial<AppStateData>): AppStateData {
   const days: Record<string, DayData> = {};
   for (const [key, day] of Object.entries(loaded.days ?? {})) {
@@ -344,10 +566,9 @@ function mergeWithDefaults(loaded: Partial<AppStateData>): AppStateData {
     ...loaded,
     fenrir,
     days,
-    dailyPractices: {
-      ...DEFAULT_PRACTICES,
-      ...(loaded.dailyPractices ?? {}),
-    },
+    dailyPractices: migratePractices(
+      (loaded.dailyPractices ?? {}) as LegacyDailyPractices
+    ),
   };
 }
 
@@ -461,13 +682,23 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const key = toDateKey();
     setState((prev) => {
       const existing = prev.days[key] ?? DEFAULT_DAY;
-      const today = toDateKey();
       const practices =
-        prev.dailyPractices.date === today
+        prev.dailyPractices.date === key
           ? prev.dailyPractices
-          : { ...DEFAULT_PRACTICES, date: today };
-      const alreadyCompleted = practices.eveningReflection;
-      const reward = alreadyCompleted ? 0 : PRACTICE_REWARDS.eveningReflection;
+          : { ...DEFAULT_PRACTICES, date: key };
+
+      // Award embers only when evening reflection is among today's picks AND
+      // hasn't already counted. Reflecting without picking it still records
+      // the reflection text — it just doesn't earn a practice ember.
+      const reflectionId = "evening_reflection";
+      const isPicked = practices.selectedIds.includes(reflectionId);
+      const alreadyDone = practices.completedIds.includes(reflectionId);
+      const practice = findPractice(reflectionId);
+      const reward = isPicked && !alreadyDone && practice ? practice.embers : 0;
+      const completedIds =
+        isPicked && !alreadyDone
+          ? [...practices.completedIds, reflectionId]
+          : practices.completedIds;
 
       return {
         ...prev,
@@ -479,7 +710,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             eveningReflectionText: text,
           },
         },
-        dailyPractices: { ...practices, eveningReflection: true },
+        dailyPractices: { ...practices, completedIds },
         fenrir: {
           ...prev.fenrir,
           ...adjustEmbers(prev.fenrir, reward),
@@ -589,28 +820,44 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const togglePractice = useCallback((id: PracticeId) => {
+  const togglePractice = useCallback((id: string) => {
     setState((prev) => {
       const today = toDateKey();
       const practices =
         prev.dailyPractices.date === today
           ? prev.dailyPractices
           : { ...DEFAULT_PRACTICES, date: today };
-      const wasOn = practices[id];
-      const delta = wasOn ? -PRACTICE_REWARDS[id] : PRACTICE_REWARDS[id];
-      const nextPractices = { ...practices, [id]: !wasOn };
+      // Only practices the user picked today can be toggled.
+      if (!practices.selectedIds.includes(id)) {
+        return prev;
+      }
+      const practice = findPractice(id);
+      if (!practice) {
+        return prev;
+      }
+      // Evening reflection completion is owned by the reflection sheet —
+      // toggling it here would sidestep the text entry it requires.
+      if (practice.opensReflection) {
+        return prev;
+      }
+      const wasOn = practices.completedIds.includes(id);
+      const delta = wasOn ? -practice.embers : practice.embers;
+      const nextCompletedIds = wasOn
+        ? practices.completedIds.filter((cid) => cid !== id)
+        : [...practices.completedIds, id];
 
-      // Persist the silence/mementoMori/virtue count into days[today] so the
-      // 66-day total still reflects this day after midnight.
+      // Persist the count of non-reflection practices into days[today] so the
+      // 66-day total stays accurate after midnight (evening reflection is
+      // already counted via days[today].eveningReflected).
+      const practicesDone = nextCompletedIds.filter((cid) => {
+        const p = findPractice(cid);
+        return p ? !p.opensReflection : false;
+      }).length;
       const existingDay = prev.days[today] ?? DEFAULT_DAY;
-      const practicesDone =
-        (nextPractices.silence ? 1 : 0) +
-        (nextPractices.mementoMori ? 1 : 0) +
-        (nextPractices.virtue ? 1 : 0);
 
       return {
         ...prev,
-        dailyPractices: nextPractices,
+        dailyPractices: { ...practices, completedIds: nextCompletedIds },
         days: {
           ...prev.days,
           [today]: { ...existingDay, practicesDone },
@@ -618,6 +865,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         fenrir: {
           ...prev.fenrir,
           ...adjustEmbers(prev.fenrir, delta),
+        },
+      };
+    });
+  }, []);
+
+  const selectTodaysPractices = useCallback((ids: string[]) => {
+    setState((prev) => {
+      const today = toDateKey();
+      const valid = ids.filter((id) => findPractice(id) !== undefined);
+      return {
+        ...prev,
+        dailyPractices: {
+          date: today,
+          selectedIds: valid.slice(0, PRACTICES_PER_DAY),
+          completedIds: [],
         },
       };
     });
@@ -706,11 +968,24 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const todaysPractices = useMemo<DailyPractices>(() => {
     const today = toDateKey();
-    if (state.dailyPractices.date === today) {
-      return state.dailyPractices;
+    const base =
+      state.dailyPractices.date === today
+        ? state.dailyPractices
+        : { ...DEFAULT_PRACTICES, date: today };
+    // Mirror eveningReflected → completedIds so picking evening_reflection
+    // after already reflecting still shows it as done.
+    if (
+      base.selectedIds.includes("evening_reflection") &&
+      !base.completedIds.includes("evening_reflection") &&
+      state.days[today]?.eveningReflected
+    ) {
+      return {
+        ...base,
+        completedIds: [...base.completedIds, "evening_reflection"],
+      };
     }
-    return { ...DEFAULT_PRACTICES, date: today };
-  }, [state.dailyPractices]);
+    return base;
+  }, [state.dailyPractices, state.days]);
 
   const todaysVirtue = useMemo<Virtue>(() => {
     return VIRTUES[new Date().getDay()];
@@ -743,6 +1018,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       completeTrial,
       selectTrial,
       togglePractice,
+      selectTodaysPractices,
       sealDay,
       resetProgress,
       setUserName,
@@ -765,6 +1041,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       completeTrial,
       selectTrial,
       togglePractice,
+      selectTodaysPractices,
       sealDay,
       resetProgress,
       setUserName,
@@ -792,13 +1069,23 @@ export function getRankTitle(rank: number): string {
   return `Ronin ${RANK_TITLES[Math.min(rank - 1, RANK_TITLES.length - 1)]}`;
 }
 
-export { toDateKey, TRIAL_POOL, VIRTUES, HABIT_AUTOMATICITY_DAYS };
+export {
+  toDateKey,
+  TRIAL_POOL,
+  VIRTUES,
+  HABIT_AUTOMATICITY_DAYS,
+  PRACTICE_POOL,
+  PRACTICES_PER_DAY,
+  findPractice,
+};
 export type {
   DayData,
   AppStateData,
   Trial,
   Virtue,
   DailyPractices,
-  PracticeId,
+  Practice,
+  PracticeIconName,
+  PracticeCategory,
   ReflectionKind,
 };

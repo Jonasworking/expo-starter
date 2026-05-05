@@ -36,6 +36,7 @@ function RootStack() {
       <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
       <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
       <Stack.Screen name="trial-select" options={{ headerShown: false }} />
+      <Stack.Screen name="practice-select" options={{ headerShown: false }} />
       <Stack.Screen
         name="sealed"
         options={{ headerShown: false, presentation: "modal" }}

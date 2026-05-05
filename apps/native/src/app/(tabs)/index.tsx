@@ -10,7 +10,7 @@ import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Text } from "@/components/ui/text";
 import {
-  type PracticeId,
+  findPractice,
   type ReflectionKind,
   toDateKey,
   useAppState,
@@ -145,7 +145,6 @@ export default function Today() {
     state,
     activeTrial,
     todaysPractices,
-    todaysVirtue,
     completeTrial,
     togglePractice,
     deleteReflection,
@@ -254,14 +253,12 @@ export default function Today() {
   );
 
   const handlePracticeTap = useCallback(
-    (id: PracticeId) => {
-      if (id === "eveningReflection") {
+    (id: string) => {
+      const practice = findPractice(id);
+      if (practice?.opensReflection) {
         const todayEvening = state.days[todayKey];
-        if (
-          todaysPractices.eveningReflection &&
-          todayEvening?.eveningReflected
-        ) {
-          // Already done — open the detail sheet for today's evening entry
+        if (todayEvening?.eveningReflected) {
+          // Already reflected — show the saved entry instead of overwriting.
           setSelectedId(entryId({ dateKey: todayKey, kind: "evening" }));
           detailSheetRef.current?.present();
           return;
@@ -271,13 +268,7 @@ export default function Today() {
       }
       togglePractice(id);
     },
-    [
-      togglePractice,
-      presentComposer,
-      state.days,
-      todayKey,
-      todaysPractices.eveningReflection,
-    ]
+    [togglePractice, presentComposer, state.days, todayKey]
   );
 
   const handleOpenDetail = useCallback((entry: HistoryEntry) => {
@@ -498,12 +489,12 @@ export default function Today() {
             />
           )}
 
-          {/* Daily practices — evening row dimmed in morning to signal it's a later step */}
+          {/* Daily practices — evening reflection dimmed in morning to signal
+              it's a later step. Pool ids use snake_case. */}
           <DailyPracticesSection
-            dimmedIds={period === "morning" ? ["eveningReflection"] : []}
+            dimmedIds={period === "morning" ? ["evening_reflection"] : []}
             onTap={handlePracticeTap}
             practices={todaysPractices}
-            virtue={todaysVirtue}
           />
 
           {/* Reflection history */}
