@@ -16,13 +16,13 @@ import {
   toDateKey,
   useAppState,
 } from "@/contexts/app-state-context";
-import { DailyPracticesSection } from "./_components/daily-practices";
-import { ReflectionBottomSheet } from "./_components/reflection-bottom-sheet";
+import { DailyPracticesSection } from "@/components/daily-practices";
+import { ReflectionBottomSheet } from "@/components/reflection/reflection-bottom-sheet";
 import {
   CompactReflectionRow,
   ReflectionPromptCard,
-} from "./_components/reflection-cards";
-import { ReflectionDetailSheet } from "./_components/reflection-detail-sheet";
+} from "@/components/reflection/reflection-cards";
+import { ReflectionDetailSheet } from "@/components/reflection/reflection-detail-sheet";
 
 const ROMAN = [
   "I",
