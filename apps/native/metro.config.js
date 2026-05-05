@@ -45,10 +45,7 @@ config.resolver = {
       if (moduleName === "react-native") {
         return baseResolve(context, "react-native-web", platform);
       }
-      if (
-        context.originModulePath &&
-        context.originModulePath.includes(RNW_PATH_FRAGMENT)
-      ) {
+      if (context.originModulePath?.includes(RNW_PATH_FRAGMENT)) {
         // Bypass Uniwind's webResolver for RNW-internal imports.
         return context.resolveRequest(context, moduleName, platform);
       }
