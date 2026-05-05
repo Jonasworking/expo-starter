@@ -14,11 +14,11 @@ import { WindBoldIcon } from "@/components/icons/ph/wind-bold";
 import { BoltBoldIcon } from "@/components/icons/solar/bolt-bold";
 import { Text } from "@/components/ui/text";
 import {
+  PRACTICE_POOL,
+  PRACTICES_PER_DAY,
   type Practice,
   type PracticeCategory,
   type PracticeIconName,
-  PRACTICE_POOL,
-  PRACTICES_PER_DAY,
   useAppState,
 } from "@/contexts/app-state-context";
 
@@ -89,14 +89,19 @@ export default function PracticeSelect() {
   };
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
-      <View className="h-16 flex-row items-center px-8">
+    <View className="flex-1 bg-background">
+      {/* Header — explicit insets.top + breathing room so the title never
+          collides with the notch and the back button is always tappable. */}
+      <View
+        className="h-16 flex-row items-center px-6"
+        style={{ paddingTop: insets.top + 16, height: insets.top + 64 }}
+      >
         <Pressable
-          className="-ml-2 p-2"
+          className="size-10 items-center justify-center rounded-full border border-border bg-card active:scale-95"
           hitSlop={8}
           onPress={() => router.back()}
         >
-          <ArrowLeftIcon className="size-6 text-foreground" />
+          <ArrowLeftIcon className="size-5 text-foreground" />
         </Pressable>
         <Text className="flex-1 pr-10 text-center font-heading-bold text-[26px] text-foreground">
           practices.
@@ -106,14 +111,14 @@ export default function PracticeSelect() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 32,
-          paddingTop: 8,
+          paddingTop: 16,
           paddingBottom: Math.max(insets.bottom, 32) + 96,
           gap: 24,
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-row items-center justify-between px-1">
-          <Text className="font-medium text-[15px] text-muted-foreground leading-relaxed">
+        <View className="flex-row items-center justify-between gap-4 px-1">
+          <Text className="flex-1 font-medium text-[15px] text-muted-foreground leading-relaxed">
             Pick {PRACTICES_PER_DAY} for today.
           </Text>
           <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
@@ -176,17 +181,19 @@ export default function PracticeSelect() {
       </ScrollView>
 
       <View
-        className="absolute right-0 left-0 bottom-0 border-border border-t bg-background px-8 pt-3"
+        className="absolute right-0 bottom-0 left-0 border-border border-t bg-background px-8 pt-3"
         style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}
       >
         <Pressable
           className="h-14 w-full items-center justify-center rounded-full bg-primary active:scale-95"
           disabled={!canConfirm}
           onPress={handleConfirm}
-          style={{ opacity: canConfirm ? 1 : 0.4 }}
+          style={{ opacity: canConfirm ? 1 : 0.5 }}
         >
           <Text className="font-semibold text-[17px] text-primary-foreground">
-            Confirm Selection
+            {canConfirm
+              ? "Confirm Selection"
+              : `Pick ${PRACTICES_PER_DAY - picked.length} to continue`}
           </Text>
         </Pressable>
       </View>
