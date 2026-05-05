@@ -1,10 +1,11 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, Switch, View } from "react-native";
+import { Alert, Pressable, Switch, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeftIcon } from "@/components/icons/ph/arrow-left";
 import { Text } from "@/components/ui/text";
 import { useAppState } from "@/contexts/app-state-context";
+import { ensureNotificationPermission } from "@/lib/notifications";
 import { useThemeColor } from "@/lib/theme/use-theme-color";
 
 const HOUR_MIN = 0;
@@ -35,6 +36,27 @@ export default function Reminder() {
     router.back();
   };
 
+  // Switching ON triggers the iOS permission prompt the very first time. If
+  // the user denies (or has previously denied and can't be re-prompted), keep
+  // the toggle off — silently scheduling without permission would mean the
+  // reminder never fires.
+  const handleToggle = async (next: boolean) => {
+    if (!next) {
+      setEnabled(false);
+      return;
+    }
+    const granted = await ensureNotificationPermission();
+    if (granted) {
+      setEnabled(true);
+      return;
+    }
+    setEnabled(false);
+    Alert.alert(
+      "Notifications disabled",
+      "Enable notifications for Ronin in iOS Settings to receive your daily reminder."
+    );
+  };
+
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       <View className="h-16 flex-row items-center px-8">
@@ -60,7 +82,7 @@ export default function Reminder() {
             Daily reminder
           </Text>
           <Switch
-            onValueChange={setEnabled}
+            onValueChange={handleToggle}
             thumbColor="#ffffff"
             trackColor={{ false: muted, true: primary }}
             value={enabled}
