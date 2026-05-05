@@ -14,7 +14,6 @@ import { WindBoldIcon } from "@/components/icons/ph/wind-bold";
 import { BoltBoldIcon } from "@/components/icons/solar/bolt-bold";
 import { Text } from "@/components/ui/text";
 import {
-  findPractice,
   PRACTICE_POOL,
   type Practice,
   type PracticeCategory,
@@ -53,30 +52,13 @@ const SELECTABLE_CATEGORIES: readonly PracticeCategory[] = [
 
 type Selection = Partial<Record<PracticeCategory, string>>;
 
-function deriveInitialSelection(ids: readonly string[]): Selection {
-  const init: Selection = {};
-  for (const id of ids) {
-    const practice = findPractice(id);
-    if (!practice) {
-      continue;
-    }
-    if (!SELECTABLE_CATEGORIES.includes(practice.category)) {
-      continue;
-    }
-    if (init[practice.category]) {
-      continue;
-    }
-    init[practice.category] = id;
-  }
-  return init;
-}
-
 export default function PracticeSelect() {
   const insets = useSafeAreaInsets();
-  const { todaysPractices, selectTodaysPractices } = useAppState();
-  const [selection, setSelection] = useState<Selection>(() =>
-    deriveInitialSelection(todaysPractices.selectedIds)
-  );
+  const { selectTodaysPractices } = useAppState();
+  // Always start fresh: no pre-selection from yesterday's pool, no
+  // mirroring of an earlier same-day pick. The user must actively tap
+  // each category to commit a practice for the day.
+  const [selection, setSelection] = useState<Selection>({});
 
   const grouped = useMemo(() => {
     const map = new Map<PracticeCategory, Practice[]>();
