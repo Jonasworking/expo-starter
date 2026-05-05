@@ -17,7 +17,7 @@ import {
   HABIT_AUTOMATICITY_DAYS,
   useAppState,
 } from "@/contexts/app-state-context";
-import { getFenrirMoodImage } from "@/lib/fenrir-mood";
+import { getFenrirMoodImage, getFenrirQuote } from "@/lib/fenrir-mood";
 
 const ROMAN = [
   "I",
@@ -59,7 +59,9 @@ export default function Fenrir() {
     fenrir.embersTowardNextRank / EMBERS_PER_RANK,
     1
   );
-  const wolfImage = getFenrirMoodImage(state, new Date());
+  const now = new Date();
+  const wolfImage = getFenrirMoodImage(state, now);
+  const fenrirQuote = getFenrirQuote(state, now);
 
   return (
     <View className="flex-1 bg-background">
@@ -110,7 +112,7 @@ export default function Fenrir() {
               default: undefined,
             })}
           >
-            Fenrir watches in silence.
+            {fenrirQuote}
           </Text>
         </View>
       </View>
