@@ -252,6 +252,18 @@ function toDateKey(date: Date = new Date()): string {
   return `${y}-${m}-${d}`;
 }
 
+const MS_PER_DAY = 86_400_000;
+
+// Number of full local-midnight boundaries crossed between two YYYY-MM-DD keys.
+// Same day → 0; next day → 1. Uses local midnight to match toDateKey().
+function daysBetween(fromKey: string, toKey: string): number {
+  const [fy, fm, fd] = fromKey.split("-").map(Number);
+  const [ty, tm, td] = toKey.split("-").map(Number);
+  const from = new Date(fy, fm - 1, fd).getTime();
+  const to = new Date(ty, tm - 1, td).getTime();
+  return Math.round((to - from) / MS_PER_DAY);
+}
+
 // Tolerant streak: counts sealed days going backwards from today, but only
 // breaks the run after 3 consecutive missed days. Up to 2 gap days within a
 // run still count as a continuing streak (only sealed days are counted).
@@ -371,6 +383,53 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // ignore write failures — state lives in memory
     });
   }, [state, isLoaded]);
+
+  // Auto-advance the active trial's day counter when the date rolls over.
+  // Without this, a user who skipped tapping "Complete Trial" yesterday would
+  // still see Day II this morning even though the calendar moved on. Rolling
+  // window: progress is always (today - trialStartDate) + 1, even on missed
+  // days. If the last day passed, finish the trial so the user picks anew.
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    const { activeTrialId, trialStartDate, currentDayInTrial } = state.fenrir;
+    if (!(activeTrialId && trialStartDate)) {
+      return;
+    }
+    const trial = TRIAL_POOL.find((t) => t.id === activeTrialId);
+    if (!trial) {
+      return;
+    }
+    const today = toDateKey();
+    const expectedDay = daysBetween(trialStartDate, today) + 1;
+    if (expectedDay <= currentDayInTrial) {
+      return;
+    }
+    if (expectedDay > trial.days) {
+      // Trial window has fully elapsed — clear so the user re-picks.
+      setState((prev) => ({
+        ...prev,
+        fenrir: {
+          ...prev.fenrir,
+          activeTrialId: null,
+          trialStartDate: null,
+          currentDayInTrial: 1,
+          rerollUsed: false,
+        },
+      }));
+      return;
+    }
+    setState((prev) => ({
+      ...prev,
+      fenrir: { ...prev.fenrir, currentDayInTrial: expectedDay },
+    }));
+  }, [
+    isLoaded,
+    state.fenrir.activeTrialId,
+    state.fenrir.trialStartDate,
+    state.fenrir.currentDayInTrial,
+  ]);
 
   const completeOnboarding = useCallback(() => {
     setState((prev) => ({ ...prev, hasOnboarded: true }));
