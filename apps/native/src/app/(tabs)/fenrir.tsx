@@ -58,18 +58,25 @@ export default function Fenrir() {
 
   return (
     <View className="flex-1 bg-background">
-      {/* Header overlay (above wolf) */}
+      {/* Header overlay (above wolf) — mirror the Today layout exactly so
+          both tabs share one header silhouette: fixed side slots, same badge
+          and avatar dimensions, identical horizontal padding. */}
       <View
-        className="absolute right-0 left-0 z-10 flex-row items-center justify-between px-8"
+        className="absolute right-0 left-0 z-10 flex-row items-center px-6"
         style={{ paddingTop: insets.top + 16 }}
       >
-        <View className="flex-row items-center rounded-full border border-border bg-card px-3.5 py-1.5">
-          <FireBoldIcon className="size-4 text-accent" />
-          <Text className="ml-1.5 font-semibold text-base text-foreground">
-            {streak}
-          </Text>
+        <View className="w-16 items-start">
+          <View className="flex-row items-center rounded-full border border-border bg-card px-3 py-1.5">
+            <FireBoldIcon className="size-4 text-accent" />
+            <Text className="ml-1.5 font-semibold text-[15px] text-foreground">
+              {streak}
+            </Text>
+          </View>
         </View>
-        <HeaderAvatar name={state.userName} />
+        <View className="flex-1" />
+        <View className="w-16 items-end">
+          <HeaderAvatar name={state.userName} />
+        </View>
       </View>
 
       {/* Wolf area */}
