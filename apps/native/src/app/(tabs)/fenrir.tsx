@@ -17,9 +17,7 @@ import {
   HABIT_AUTOMATICITY_DAYS,
   useAppState,
 } from "@/contexts/app-state-context";
-
-const WOLF_URI =
-  "https://ggrhecslgdflloszjkwl.supabase.co/storage/v1/object/public/user-assets/7oidmK6IZjC/ai/wolf-idle-png-vTNeWnkfaQr.png";
+import { getFenrirMoodImage } from "@/lib/fenrir-mood";
 
 const ROMAN = [
   "I",
@@ -61,6 +59,7 @@ export default function Fenrir() {
     fenrir.embersTowardNextRank / EMBERS_PER_RANK,
     1
   );
+  const wolfImage = getFenrirMoodImage(state, new Date());
 
   return (
     <View className="flex-1 bg-background">
@@ -94,7 +93,7 @@ export default function Fenrir() {
           cachePolicy="memory-disk"
           contentFit="contain"
           priority="high"
-          source={{ uri: WOLF_URI }}
+          source={wolfImage}
           style={{ width: wolfWidth, height: wolfHeight }}
           transition={200}
         />
