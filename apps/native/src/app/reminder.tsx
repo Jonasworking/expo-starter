@@ -1,3 +1,6 @@
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, Switch, View } from "react-native";
@@ -8,30 +11,28 @@ import { useAppState } from "@/contexts/app-state-context";
 import { ensureNotificationPermission } from "@/lib/notifications";
 import { useThemeColor } from "@/lib/theme/use-theme-color";
 
-const HOUR_MIN = 0;
-const HOUR_MAX = 23;
-const MINUTE_MIN = 0;
-const MINUTE_MAX = 59;
-const MINUTE_STEP = 5;
-
 const pad = (n: number) => String(n).padStart(2, "0");
 
-const wrap = (value: number, min: number, max: number) => {
-  const span = max - min + 1;
-  return ((((value - min) % span) + span) % span) + min;
-};
+function parseReminderTime(value: string): Date {
+  const [hourStr, minuteStr] = value.split(":");
+  const date = new Date();
+  date.setHours(Number(hourStr) || 0, Number(minuteStr) || 0, 0, 0);
+  return date;
+}
 
 export default function Reminder() {
   const insets = useSafeAreaInsets();
   const { state, setReminderTime, setReminderEnabled } = useAppState();
-  const [hourStr, minuteStr] = state.reminderTime.split(":");
-  const [hour, setHour] = useState<number>(Number(hourStr) || 0);
-  const [minute, setMinute] = useState<number>(Number(minuteStr) || 0);
+  const [reminderDate, setReminderDate] = useState<Date>(() =>
+    parseReminderTime(state.reminderTime)
+  );
   const [enabled, setEnabled] = useState<boolean>(state.reminderEnabled);
   const [primary, muted] = useThemeColor(["primary", "muted"]);
 
   const handleSave = () => {
-    setReminderTime(`${pad(hour)}:${pad(minute)}`);
+    setReminderTime(
+      `${pad(reminderDate.getHours())}:${pad(reminderDate.getMinutes())}`
+    );
     setReminderEnabled(enabled);
     router.back();
   };
@@ -57,6 +58,12 @@ export default function Reminder() {
     );
   };
 
+  const handlePickerChange = (_event: DateTimePickerEvent, date?: Date) => {
+    if (date) {
+      setReminderDate(date);
+    }
+  };
+
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       <View className="h-16 flex-row items-center px-8">
@@ -77,7 +84,7 @@ export default function Reminder() {
           Choose when Fenrir should remind you to begin the day.
         </Text>
 
-        <View className="mb-12 w-full flex-row items-center justify-between rounded-[18px] border border-border bg-card px-5 py-4">
+        <View className="mb-8 w-full flex-row items-center justify-between rounded-[18px] border border-border bg-card px-5 py-4">
           <Text className="font-medium text-[15px] text-foreground">
             Daily reminder
           </Text>
@@ -90,24 +97,16 @@ export default function Reminder() {
         </View>
 
         <View
-          className="flex-row items-center justify-center gap-6"
+          className="w-full items-center"
+          pointerEvents={enabled ? "auto" : "none"}
           style={{ opacity: enabled ? 1 : 0.4 }}
         >
-          <TimeColumn
-            disabled={!enabled}
-            label="Hour"
-            onChange={(next) => setHour(wrap(next, HOUR_MIN, HOUR_MAX))}
-            value={hour}
-          />
-          <Text className="font-heading-bold text-[48px] text-foreground">
-            :
-          </Text>
-          <TimeColumn
-            disabled={!enabled}
-            label="Minute"
-            onChange={(next) => setMinute(wrap(next, MINUTE_MIN, MINUTE_MAX))}
-            step={MINUTE_STEP}
-            value={minute}
+          <DateTimePicker
+            display="spinner"
+            mode="time"
+            onChange={handlePickerChange}
+            style={{ width: "100%", backgroundColor: "transparent" }}
+            value={reminderDate}
           />
         </View>
       </View>
@@ -125,51 +124,6 @@ export default function Reminder() {
           </Text>
         </Pressable>
       </View>
-    </View>
-  );
-}
-
-function TimeColumn({
-  label,
-  onChange,
-  step = 1,
-  value,
-  disabled = false,
-}: {
-  label: string;
-  onChange: (next: number) => void;
-  step?: number;
-  value: number;
-  disabled?: boolean;
-}) {
-  return (
-    <View className="items-center gap-3">
-      <Pressable
-        className="size-12 items-center justify-center rounded-full border border-border bg-card active:scale-95"
-        disabled={disabled}
-        hitSlop={8}
-        onPress={() => onChange(value + step)}
-      >
-        <Text className="font-bold text-[22px] text-foreground">+</Text>
-      </Pressable>
-
-      <View className="w-24 items-center justify-center rounded-[18px] border border-border bg-card py-4">
-        <Text className="font-heading-bold text-[40px] text-foreground">
-          {String(value).padStart(2, "0")}
-        </Text>
-        <Text className="mt-1 font-semibold text-[11px] text-muted-foreground uppercase tracking-widest">
-          {label}
-        </Text>
-      </View>
-
-      <Pressable
-        className="size-12 items-center justify-center rounded-full border border-border bg-card active:scale-95"
-        disabled={disabled}
-        hitSlop={8}
-        onPress={() => onChange(value - step)}
-      >
-        <Text className="font-bold text-[22px] text-foreground">−</Text>
-      </Pressable>
     </View>
   );
 }
