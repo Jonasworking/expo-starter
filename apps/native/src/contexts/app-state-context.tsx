@@ -205,16 +205,9 @@ const PRACTICE_POOL: readonly Practice[] = [
     embers: 10,
     category: "virtue",
   },
-  // Reflection
-  {
-    id: "evening_reflection",
-    title: "Evening Reflection",
-    description: "What did you do well today?",
-    icon: "moon",
-    embers: 15,
-    category: "reflection",
-    opensReflection: true,
-  },
+  // Reflection — Evening Reflection is intentionally NOT in this pool. It
+  // has its own dedicated card on Today and runs through the bottom sheet,
+  // so duplicating it here would let users pick it twice.
   {
     id: "gratitude",
     title: "Gratitude",
@@ -513,12 +506,11 @@ function migratePractices(loaded: LegacyDailyPractices): DailyPractices {
     return { ...DEFAULT_PRACTICES };
   }
   const legacyVirtueId = VIRTUES[new Date().getDay()].id;
-  const selectedIds = [
-    "silence",
-    "memento_mori",
-    legacyVirtueId,
-    "evening_reflection",
-  ];
+  // Evening reflection used to be a 4th pseudo-practice; it's no longer in
+  // the pool, so legacy users land with three picked and need to pick a
+  // reflection-category practice (gratitude / negative_visualization) on
+  // their next visit. eveningReflection completion stays in days[].eveningReflected.
+  const selectedIds = ["silence", "memento_mori", legacyVirtueId];
   const completedIds: string[] = [];
   if (loaded.silence) {
     completedIds.push("silence");
@@ -528,9 +520,6 @@ function migratePractices(loaded: LegacyDailyPractices): DailyPractices {
   }
   if (loaded.virtue) {
     completedIds.push(legacyVirtueId);
-  }
-  if (loaded.eveningReflection) {
-    completedIds.push("evening_reflection");
   }
   return {
     date: loaded.date ?? toDateKey(),
@@ -682,24 +671,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const key = toDateKey();
     setState((prev) => {
       const existing = prev.days[key] ?? DEFAULT_DAY;
-      const practices =
-        prev.dailyPractices.date === key
-          ? prev.dailyPractices
-          : { ...DEFAULT_PRACTICES, date: key };
-
-      // Award embers only when evening reflection is among today's picks AND
-      // hasn't already counted. Reflecting without picking it still records
-      // the reflection text — it just doesn't earn a practice ember.
-      const reflectionId = "evening_reflection";
-      const isPicked = practices.selectedIds.includes(reflectionId);
-      const alreadyDone = practices.completedIds.includes(reflectionId);
-      const practice = findPractice(reflectionId);
-      const reward = isPicked && !alreadyDone && practice ? practice.embers : 0;
-      const completedIds =
-        isPicked && !alreadyDone
-          ? [...practices.completedIds, reflectionId]
-          : practices.completedIds;
-
+      // Evening reflection is its own dedicated flow now — no longer a pool
+      // practice — so it just records the entry. Practice embers come from
+      // the four selected practices, not this flow.
       return {
         ...prev,
         days: {
@@ -709,11 +683,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             eveningReflected: true,
             eveningReflectionText: text,
           },
-        },
-        dailyPractices: { ...practices, completedIds },
-        fenrir: {
-          ...prev.fenrir,
-          ...adjustEmbers(prev.fenrir, reward),
         },
       };
     });
@@ -968,24 +937,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const todaysPractices = useMemo<DailyPractices>(() => {
     const today = toDateKey();
-    const base =
-      state.dailyPractices.date === today
-        ? state.dailyPractices
-        : { ...DEFAULT_PRACTICES, date: today };
-    // Mirror eveningReflected → completedIds so picking evening_reflection
-    // after already reflecting still shows it as done.
-    if (
-      base.selectedIds.includes("evening_reflection") &&
-      !base.completedIds.includes("evening_reflection") &&
-      state.days[today]?.eveningReflected
-    ) {
-      return {
-        ...base,
-        completedIds: [...base.completedIds, "evening_reflection"],
-      };
+    if (state.dailyPractices.date === today) {
+      return state.dailyPractices;
     }
-    return base;
-  }, [state.dailyPractices, state.days]);
+    return { ...DEFAULT_PRACTICES, date: today };
+  }, [state.dailyPractices]);
 
   const todaysVirtue = useMemo<Virtue>(() => {
     return VIRTUES[new Date().getDay()];
