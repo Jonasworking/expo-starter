@@ -53,8 +53,8 @@ export default function Settings() {
         {/* Profile card */}
         <View className="mb-4 flex-row items-center gap-4 rounded-[22px] border border-border bg-card p-6">
           <Avatar
-            emojiFontSize={36}
-            letterFontSize={22}
+            emojiFontSize={Math.round(64 * 0.55)}
+            letterFontSize={Math.round(64 * 0.4)}
             name={state.userName}
             size={64}
           />

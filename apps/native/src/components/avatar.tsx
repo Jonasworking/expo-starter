@@ -5,11 +5,20 @@ const EMOJI_RE = /\p{Extended_Pictographic}/u;
 
 function getAvatarChar(name: string): { char: string; isEmoji: boolean } {
   const trimmed = name.trim();
-  const first = Array.from(trimmed)[0];
-  if (!first) {
+  if (!trimmed) {
     return { char: "?", isEmoji: false };
   }
-  return { char: first, isEmoji: EMOJI_RE.test(first) };
+  // Iterate code-point segments and pick the first that contains a pictograph,
+  // otherwise fall back to the first character. This handles names like
+  // "🐺 Wolfgang" (emoji first) and "Wolfgang 🐺" (letters first) — and ZWJ
+  // emoji sequences are kept intact via the segment, not split mid-grapheme.
+  const segments = Array.from(trimmed);
+  for (const seg of segments) {
+    if (EMOJI_RE.test(seg)) {
+      return { char: seg, isEmoji: true };
+    }
+  }
+  return { char: segments[0], isEmoji: false };
 }
 
 interface AvatarProps {

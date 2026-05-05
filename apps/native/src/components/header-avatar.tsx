@@ -2,14 +2,26 @@ import { router } from "expo-router";
 import { Pressable } from "react-native";
 import { Avatar } from "@/components/avatar";
 
-export function HeaderAvatar({ name }: { name: string }) {
+interface HeaderAvatarProps {
+  name: string;
+  size?: number;
+}
+
+export function HeaderAvatar({ name, size = 48 }: HeaderAvatarProps) {
+  const letterFontSize = Math.round(size * 0.4);
+  const emojiFontSize = Math.round(size * 0.55);
   return (
     <Pressable
       className="rounded-full active:scale-95"
       hitSlop={8}
       onPress={() => router.push("/settings")}
     >
-      <Avatar emojiFontSize={22} letterFontSize={18} name={name} size={48} />
+      <Avatar
+        emojiFontSize={emojiFontSize}
+        letterFontSize={letterFontSize}
+        name={name}
+        size={size}
+      />
     </Pressable>
   );
 }
