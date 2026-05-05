@@ -18,8 +18,9 @@ import { useEffect } from "react";
 import { Image as RNImage } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import { AppStateProvider } from "@/contexts/app-state-context";
+import { AppStateProvider, useAppState } from "@/contexts/app-state-context";
 import { AppThemeProvider } from "@/contexts/app-theme-context";
+import { scheduleDailyReminder } from "@/lib/notifications";
 
 preventAutoHideAsync();
 
@@ -39,6 +40,26 @@ const FENRIR_WOLF_URIS = [
 export const unstable_settings = {
   initialRouteName: "index",
 };
+
+// Re-schedule the daily reminder on every app open so today's pool message
+// gets baked into the OS-scheduled notification. Lives here (rather than
+// AppStateContext) so the refresh happens once per launch, independent of
+// the in-session re-scheduling that fires on reminderTime/enabled changes.
+function DailyReminderRefresher() {
+  const { isLoaded, state } = useAppState();
+  useEffect(() => {
+    if (!(isLoaded && state.hasOnboarded && state.reminderEnabled)) {
+      return;
+    }
+    scheduleDailyReminder(state.reminderTime).catch((_err) => {
+      // Permission denied or platform unavailable — leave silently.
+    });
+    // Intentionally only re-runs when load completes; in-session changes
+    // are handled by AppStateContext's own scheduling effect.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: see comment above
+  }, [isLoaded]);
+  return null;
+}
 
 function RootStack() {
   return (
@@ -95,6 +116,7 @@ export default function Layout() {
         <AppStateProvider>
           <AppThemeProvider>
             <BottomSheetModalProvider>
+              <DailyReminderRefresher />
               <RootStack />
               <PortalHost />
             </BottomSheetModalProvider>
