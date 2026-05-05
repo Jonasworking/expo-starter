@@ -138,8 +138,16 @@ interface Practice {
 // Stillness + virtues earn 10 embers; reflection, body, and mind earn 15 —
 // per the design brief that physical and cognitive practices warrant a
 // larger ember reward than meditative ones.
+//
+// Order in this pool is significant for the selection screen: stillness
+// must come first so the screen renders STILLNESS & MEDITATION as the
+// opening category. Don't reorder these blocks without also reviewing
+// SELECTABLE_CATEGORIES below.
 const PRACTICE_POOL: readonly Practice[] = [
-  // Stillness & Meditation
+  // ── STILLNESS & MEDITATION ────────────────────────────────────────────
+  // Four contemplative practices. Walking meditation lives under BODY
+  // because the physical movement is its primary surface; "in silence"
+  // is the modifier, not the act.
   {
     id: "silence",
     title: "5 min Silence",
