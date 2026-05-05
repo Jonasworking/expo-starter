@@ -77,20 +77,39 @@ export async function cancelDailyReminder(): Promise<void> {
   }
 }
 
+const FALLBACK_REMINDER_BODY = "Ronin.";
+
 // Pick a stoic reminder body deterministically by day-of-epoch so the same
 // calendar day always shows the same message and consecutive days rotate
 // through the full pool. Morning vs evening pool is chosen by reminder hour.
+// Always returns a non-empty string so callers can hand the result straight
+// to scheduleNotificationAsync without further guarding.
 function pickReminderMessage(hour: number, date: Date): string {
   const pool = hour < 12 ? MORNING_POOL : EVENING_POOL;
-  const daysSinceEpoch = Math.floor(date.getTime() / MS_PER_DAY);
-  return pool[daysSinceEpoch % pool.length];
+  const ms = date.getTime();
+  if (!Number.isFinite(ms)) {
+    return pool[0] ?? FALLBACK_REMINDER_BODY;
+  }
+  const daysSinceEpoch = Math.floor(ms / MS_PER_DAY);
+  const idx = ((daysSinceEpoch % pool.length) + pool.length) % pool.length;
+  return pool[idx] ?? FALLBACK_REMINDER_BODY;
 }
 
 export async function scheduleDailyReminder(time: string): Promise<boolean> {
+  if (typeof time !== "string" || !time.includes(":")) {
+    return false;
+  }
   const [hourStr, minuteStr] = time.split(":");
   const hour = Number(hourStr);
   const minute = Number(minuteStr);
-  if (Number.isNaN(hour) || Number.isNaN(minute)) {
+  if (
+    !Number.isFinite(hour) ||
+    !Number.isFinite(minute) ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59
+  ) {
     return false;
   }
 
@@ -101,11 +120,16 @@ export async function scheduleDailyReminder(time: string): Promise<boolean> {
 
   await cancelDailyReminder();
 
+  // Resolve body up front so the object literal handed to expo-notifications
+  // can never carry an undefined `body` field — that crashes some plugin
+  // paths with "Cannot read properties of undefined (reading 'body')".
+  const body = pickReminderMessage(hour, new Date()) || FALLBACK_REMINDER_BODY;
+
   await scheduleNotificationAsync({
     identifier: REMINDER_IDENTIFIER,
     content: {
       title: "Ronin",
-      body: pickReminderMessage(hour, new Date()),
+      body,
       sound: false,
     },
     trigger: {

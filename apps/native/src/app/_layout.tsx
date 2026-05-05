@@ -48,10 +48,14 @@ export const unstable_settings = {
 function DailyReminderRefresher() {
   const { isLoaded, state } = useAppState();
   useEffect(() => {
-    if (!(isLoaded && state.hasOnboarded && state.reminderEnabled)) {
+    if (!(isLoaded && state?.hasOnboarded && state?.reminderEnabled)) {
       return;
     }
-    scheduleDailyReminder(state.reminderTime).catch((_err) => {
+    const time = state.reminderTime;
+    if (typeof time !== "string" || !time.includes(":")) {
+      return;
+    }
+    scheduleDailyReminder(time).catch((_err) => {
       // Permission denied or platform unavailable — leave silently.
     });
     // Intentionally only re-runs when load completes; in-session changes
