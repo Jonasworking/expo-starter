@@ -1,7 +1,6 @@
 import { router } from "expo-router";
 import type { ComponentType } from "react";
 import { Pressable, View } from "react-native";
-import { BoltBoldIcon } from "@/components/icons/solar/bolt-bold";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
 import { MoonBoldIcon } from "@/components/icons/ph/moon-bold";
 import { PencilSimpleBoldIcon } from "@/components/icons/ph/pencil-simple-bold";
@@ -9,13 +8,14 @@ import { ScalesBoldIcon } from "@/components/icons/ph/scales-bold";
 import { ShieldBoldIcon } from "@/components/icons/ph/shield-bold";
 import { SkullBoldIcon } from "@/components/icons/ph/skull-bold";
 import { WindBoldIcon } from "@/components/icons/ph/wind-bold";
+import { BoltBoldIcon } from "@/components/icons/solar/bolt-bold";
 import { Text } from "@/components/ui/text";
 import {
   type DailyPractices,
   findPractice,
+  PRACTICES_PER_DAY,
   type Practice,
   type PracticeIconName,
-  PRACTICES_PER_DAY,
 } from "@/contexts/app-state-context";
 
 type IconComponent = ComponentType<{ className?: string }>;
