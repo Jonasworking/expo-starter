@@ -3,18 +3,11 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { DailyPracticesSection } from "@/components/daily-practices";
 import { HeaderAvatar } from "@/components/header-avatar";
 import { CaretRightBoldIcon } from "@/components/icons/ph/caret-right-bold";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
 import { DotsThreeBoldIcon } from "@/components/icons/ph/dots-three-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
-import { ReflectionBottomSheet } from "@/components/reflection/reflection-bottom-sheet";
-import {
-  CompactReflectionRow,
-  ReflectionPromptCard,
-} from "@/components/reflection/reflection-cards";
-import { ReflectionDetailSheet } from "@/components/reflection/reflection-detail-sheet";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Text } from "@/components/ui/text";
 import {
@@ -23,6 +16,13 @@ import {
   toDateKey,
   useAppState,
 } from "@/contexts/app-state-context";
+import { DailyPracticesSection } from "@/components/daily-practices";
+import { ReflectionBottomSheet } from "@/components/reflection/reflection-bottom-sheet";
+import {
+  CompactReflectionRow,
+  ReflectionPromptCard,
+} from "@/components/reflection/reflection-cards";
+import { ReflectionDetailSheet } from "@/components/reflection/reflection-detail-sheet";
 
 const ROMAN = [
   "I",
@@ -525,8 +525,8 @@ export default function Today() {
                 }}
               />
             </Pressable>
-            {reflectionsExpanded &&
-              (reflectionHistory.length === 0 ? (
+            {reflectionsExpanded ? (
+              reflectionHistory.length === 0 ? (
                 <View className="items-center rounded-[22px] border border-border border-dashed bg-card px-6 py-8">
                   <Text className="text-center font-medium text-[15px] text-muted-foreground leading-relaxed">
                     Your reflections will appear here.{"\n"}Take a moment to
@@ -565,7 +565,8 @@ export default function Today() {
                     );
                   })}
                 </View>
-              ))}
+              )
+            ) : null}
           </View>
         </View>
       </ScrollView>
