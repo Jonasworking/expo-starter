@@ -1,4 +1,12 @@
-import * as Notifications from "expo-notifications";
+import {
+  cancelScheduledNotificationAsync,
+  getPermissionsAsync,
+  IosAuthorizationStatus,
+  requestPermissionsAsync,
+  SchedulableTriggerInputTypes,
+  scheduleNotificationAsync,
+  setNotificationHandler,
+} from "expo-notifications";
 import { Platform } from "react-native";
 
 const REMINDER_IDENTIFIER = "ronin-daily-reminder";
@@ -11,10 +19,10 @@ const REMINDER_BODIES = [
   "Sit. Breathe. Begin again.",
 ] as const;
 
-// Notifications.setNotificationHandler controls how notifications behave
+// setNotificationHandler controls how notifications behave
 // while the app is foregrounded. The defaults swallow alerts in-app, which
 // makes the reminder feel broken when the user is testing it.
-Notifications.setNotificationHandler({
+setNotificationHandler({
   handleNotification: () =>
     Promise.resolve({
       shouldShowBanner: true,
@@ -25,17 +33,17 @@ Notifications.setNotificationHandler({
 });
 
 export async function ensureNotificationPermission(): Promise<boolean> {
-  const settings = await Notifications.getPermissionsAsync();
+  const settings = await getPermissionsAsync();
   if (
     settings.granted ||
-    settings.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL
+    settings.ios?.status === IosAuthorizationStatus.PROVISIONAL
   ) {
     return true;
   }
   if (settings.canAskAgain === false) {
     return false;
   }
-  const next = await Notifications.requestPermissionsAsync({
+  const next = await requestPermissionsAsync({
     ios: {
       allowAlert: true,
       allowBadge: false,
@@ -47,7 +55,7 @@ export async function ensureNotificationPermission(): Promise<boolean> {
 
 export async function cancelDailyReminder(): Promise<void> {
   try {
-    await Notifications.cancelScheduledNotificationAsync(REMINDER_IDENTIFIER);
+    await cancelScheduledNotificationAsync(REMINDER_IDENTIFIER);
   } catch {
     // No matching scheduled notification — safe to ignore.
   }
@@ -73,7 +81,7 @@ export async function scheduleDailyReminder(time: string): Promise<boolean> {
 
   await cancelDailyReminder();
 
-  await Notifications.scheduleNotificationAsync({
+  await scheduleNotificationAsync({
     identifier: REMINDER_IDENTIFIER,
     content: {
       title: "Ronin",
@@ -81,7 +89,7 @@ export async function scheduleDailyReminder(time: string): Promise<boolean> {
       sound: false,
     },
     trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DAILY,
+      type: SchedulableTriggerInputTypes.DAILY,
       hour,
       minute,
       ...(Platform.OS === "android" ? { channelId: "default" } : {}),
