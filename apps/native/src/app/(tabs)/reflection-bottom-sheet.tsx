@@ -91,7 +91,7 @@ const ReflectionBottomSheet = forwardRef<
 
       {/* Content */}
       <View className="flex-1 px-8 pt-4">
-        <Text className="mb-6 font-serif text-[36px] text-foreground leading-tight">
+        <Text className="mb-6 font-heading-bold text-[28px] text-foreground leading-tight">
           {PROMPTS[kind]}
         </Text>
 
@@ -103,8 +103,11 @@ const ReflectionBottomSheet = forwardRef<
           placeholderTextColor={mutedForeground}
           style={{
             fontSize: 18,
+            lineHeight: 26,
             color: foreground,
             fontFamily: "Inter_400Regular",
+            fontWeight: "400",
+            fontStyle: "normal",
             minHeight: 200,
             padding: 0,
             textAlignVertical: "top",
