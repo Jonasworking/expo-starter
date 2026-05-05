@@ -58,7 +58,7 @@ const ReflectionDetailSheet = forwardRef<
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="font-serif text-[24px] text-foreground leading-relaxed">
+        <Text className="font-medium text-[18px] text-foreground leading-relaxed">
           {text}
         </Text>
       </ScrollView>
