@@ -14,8 +14,8 @@ import { useFonts } from "expo-font";
 import { Image as ExpoImage } from "expo-image";
 import { Stack } from "expo-router";
 import { hideAsync, preventAutoHideAsync } from "expo-splash-screen";
-import { useEffect, useState } from "react";
-import { Image as RNImage } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Image as RNImage, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SplashScreen } from "@/components/splash-screen";
@@ -26,6 +26,8 @@ import { scheduleDailyReminder } from "@/lib/notifications";
 // Minimum time the branded splash overlay stays visible after fonts load.
 // Total perceived splash ≈ native splash (until fonts load) + this hold.
 const SPLASH_MIN_VISIBLE_MS = 2500;
+// Cross-fade duration when transitioning from splash to app.
+const SPLASH_FADE_MS = 400;
 
 preventAutoHideAsync();
 
@@ -104,11 +106,12 @@ export default function Layout() {
     PlayfairDisplay_400Regular_Italic,
     JetBrainsMono_400Regular,
   });
-  const [splashHeld, setSplashHeld] = useState(false);
+  const splashOpacity = useRef(new Animated.Value(1)).current;
+  const [splashUnmounted, setSplashUnmounted] = useState(false);
 
-  // Hold the React splash overlay for a minimum visible window after fonts
-  // load. Hide the native splash at the same moment the React overlay mounts
-  // so the user sees a continuous wolf-on-dark frame instead of a flash.
+  // Hold the React splash overlay for a minimum visible window, then cross-
+  // fade it out over 400ms. Hide the native splash the moment fonts load so
+  // the React overlay carries a continuous wolf-on-dark frame.
   useEffect(() => {
     if (!fontsLoaded) {
       return;
@@ -116,9 +119,19 @@ export default function Layout() {
     hideAsync().catch((_err) => {
       // Already hidden or platform unavailable — fine.
     });
-    const t = setTimeout(() => setSplashHeld(true), SPLASH_MIN_VISIBLE_MS);
+    const t = setTimeout(() => {
+      Animated.timing(splashOpacity, {
+        toValue: 0,
+        duration: SPLASH_FADE_MS,
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) {
+          setSplashUnmounted(true);
+        }
+      });
+    }, SPLASH_MIN_VISIBLE_MS);
     return () => clearTimeout(t);
-  }, [fontsLoaded]);
+  }, [fontsLoaded, splashOpacity]);
 
   useEffect(() => {
     ExpoImage.prefetch(FENRIR_WOLF_URIS, "memory-disk").catch((_err) => {
@@ -140,7 +153,17 @@ export default function Layout() {
               <DailyReminderRefresher />
               <RootStack />
               <PortalHost />
-              {splashHeld ? null : <SplashScreen />}
+              {splashUnmounted ? null : (
+                <Animated.View
+                  pointerEvents="none"
+                  style={[
+                    StyleSheet.absoluteFill,
+                    { zIndex: 999, opacity: splashOpacity },
+                  ]}
+                >
+                  <SplashScreen />
+                </Animated.View>
+              )}
             </BottomSheetModalProvider>
           </AppThemeProvider>
         </AppStateProvider>
