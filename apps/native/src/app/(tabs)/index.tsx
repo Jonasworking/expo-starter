@@ -23,6 +23,7 @@ import {
   toDateKey,
   useAppState,
 } from "@/contexts/app-state-context";
+import { getTrialCardQuote } from "@/lib/trial-card-quotes";
 
 const ROMAN = [
   "I",
@@ -152,6 +153,8 @@ export default function Today() {
     completeTrial,
     togglePractice,
     deleteReflection,
+    isTrialCardRevealed,
+    markTrialCardRevealed,
   } = useAppState();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -404,45 +407,65 @@ export default function Today() {
 
           {/* Trial card — Choose Your Trial CTA when none active, else active trial */}
           {activeTrial ? (
-            <View className="items-center rounded-[22px] border border-border bg-card p-8">
-              {!state.fenrir.rerollUsed && (
-                <Pressable
-                  className="absolute -top-1 -right-1 size-9 items-center justify-center rounded-full active:opacity-60"
-                  hitSlop={6}
-                  onPress={() => setConfirmReroll(true)}
-                  style={{ top: 12, right: 12 }}
+            isTrialCardRevealed ? (
+              <View className="items-center rounded-[22px] border border-border bg-card p-8">
+                {!state.fenrir.rerollUsed && (
+                  <Pressable
+                    className="absolute -top-1 -right-1 size-9 items-center justify-center rounded-full active:opacity-60"
+                    hitSlop={6}
+                    onPress={() => setConfirmReroll(true)}
+                    style={{ top: 12, right: 12 }}
+                  >
+                    <DotsThreeBoldIcon className="size-5 text-muted-foreground" />
+                  </Pressable>
+                )}
+                <Text className="mb-1 font-heading-bold text-[26px] text-foreground">
+                  {activeTrial.title}
+                </Text>
+                <Text className="mb-6 font-medium text-[13px] text-muted-foreground">
+                  Day {toRoman(state.fenrir.currentDayInTrial)} of{" "}
+                  {toRoman(activeTrial.days)}
+                </Text>
+                <Text className="mb-8 px-4 text-center font-medium text-[18px] text-foreground leading-relaxed">
+                  {activeTrial.description}
+                </Text>
+                {trialCompleted ? (
+                  <View className="h-14 w-full flex-row items-center justify-center gap-2 rounded-full bg-muted">
+                    <CheckBoldIcon className="size-5 text-muted-foreground" />
+                    <Text className="font-semibold text-[17px] text-muted-foreground">
+                      Completed
+                    </Text>
+                  </View>
+                ) : (
+                  <Pressable
+                    className="h-14 w-full items-center justify-center rounded-full bg-primary active:scale-95"
+                    onPress={completeTrial}
+                  >
+                    <Text className="font-semibold text-[17px] text-primary-foreground">
+                      Complete Trial
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            ) : (
+              <Pressable
+                className="items-center rounded-[22px] border border-border bg-card p-8"
+                onPress={() => markTrialCardRevealed(activeTrial.id)}
+              >
+                <Text className="font-serif text-[22px] text-foreground">
+                  Today's Challenge
+                </Text>
+                <Text
+                  className="mt-4 px-2 text-center text-[14px] text-muted-foreground"
+                  style={{ fontStyle: "italic", lineHeight: 22 }}
                 >
-                  <DotsThreeBoldIcon className="size-5 text-muted-foreground" />
-                </Pressable>
-              )}
-              <Text className="mb-1 font-heading-bold text-[26px] text-foreground">
-                {activeTrial.title}
-              </Text>
-              <Text className="mb-6 font-medium text-[13px] text-muted-foreground">
-                Day {toRoman(state.fenrir.currentDayInTrial)} of{" "}
-                {toRoman(activeTrial.days)}
-              </Text>
-              <Text className="mb-8 px-4 text-center font-medium text-[18px] text-foreground leading-relaxed">
-                {activeTrial.description}
-              </Text>
-              {trialCompleted ? (
-                <View className="h-14 w-full flex-row items-center justify-center gap-2 rounded-full bg-muted">
-                  <CheckBoldIcon className="size-5 text-muted-foreground" />
-                  <Text className="font-semibold text-[17px] text-muted-foreground">
-                    Completed
-                  </Text>
-                </View>
-              ) : (
-                <Pressable
-                  className="h-14 w-full items-center justify-center rounded-full bg-primary active:scale-95"
-                  onPress={completeTrial}
-                >
-                  <Text className="font-semibold text-[17px] text-primary-foreground">
-                    Complete Trial
-                  </Text>
-                </Pressable>
-              )}
-            </View>
+                  {getTrialCardQuote(activeTrial.id)}
+                </Text>
+                <Text className="mt-6 font-semibold text-[11px] text-muted-foreground uppercase tracking-widest">
+                  Tap to reveal
+                </Text>
+              </Pressable>
+            )
           ) : (
             <Pressable
               className="items-center rounded-[22px] border border-border border-dashed bg-card p-8 active:scale-[0.99]"
