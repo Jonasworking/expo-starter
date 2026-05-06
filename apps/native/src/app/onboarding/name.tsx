@@ -42,7 +42,7 @@ export default function Name() {
         keyboardVerticalOffset={insets.top}
       >
         <View className="flex-1">
-          <Text className="font-heading-bold text-[32px] text-foreground leading-tight">
+          <Text className="font-serif text-[36px] text-foreground leading-tight">
             What shall we call you?
           </Text>
 

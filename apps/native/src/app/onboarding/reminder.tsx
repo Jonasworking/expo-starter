@@ -71,7 +71,7 @@ export default function Reminder() {
       style={{ paddingTop: insets.top + 24 }}
     >
       <View className="flex-1">
-        <Text className="font-heading-bold text-[32px] text-foreground leading-tight">
+        <Text className="font-serif text-[36px] text-foreground leading-tight">
           When shall Fenrir wake you?
         </Text>
 
