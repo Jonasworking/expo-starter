@@ -14,13 +14,18 @@ import { useFonts } from "expo-font";
 import { Image as ExpoImage } from "expo-image";
 import { Stack } from "expo-router";
 import { hideAsync, preventAutoHideAsync } from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Image as RNImage } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { SplashScreen } from "@/components/splash-screen";
 import { AppStateProvider, useAppState } from "@/contexts/app-state-context";
 import { AppThemeProvider } from "@/contexts/app-theme-context";
 import { scheduleDailyReminder } from "@/lib/notifications";
+
+// Minimum time the branded splash overlay stays visible after fonts load.
+// Total perceived splash ≈ native splash (until fonts load) + this hold.
+const SPLASH_MIN_VISIBLE_MS = 1500;
 
 preventAutoHideAsync();
 
@@ -99,11 +104,20 @@ export default function Layout() {
     PlayfairDisplay_400Regular_Italic,
     JetBrainsMono_400Regular,
   });
+  const [splashHeld, setSplashHeld] = useState(false);
 
+  // Hold the React splash overlay for a minimum visible window after fonts
+  // load. Hide the native splash at the same moment the React overlay mounts
+  // so the user sees a continuous wolf-on-dark frame instead of a flash.
   useEffect(() => {
-    if (fontsLoaded) {
-      hideAsync();
+    if (!fontsLoaded) {
+      return;
     }
+    hideAsync().catch((_err) => {
+      // Already hidden or platform unavailable — fine.
+    });
+    const t = setTimeout(() => setSplashHeld(true), SPLASH_MIN_VISIBLE_MS);
+    return () => clearTimeout(t);
   }, [fontsLoaded]);
 
   useEffect(() => {
@@ -126,6 +140,7 @@ export default function Layout() {
               <DailyReminderRefresher />
               <RootStack />
               <PortalHost />
+              {splashHeld ? null : <SplashScreen />}
             </BottomSheetModalProvider>
           </AppThemeProvider>
         </AppStateProvider>

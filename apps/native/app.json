@@ -12,7 +12,19 @@
     "ios": {
       "icon": "./assets/images/icon.png"
     },
-    "plugins": ["expo-font", "expo-notifications"],
+    "plugins": [
+      "expo-font",
+      "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0E0E0E",
+          "image": "./assets/fenrir/wolf_idle.png",
+          "imageWidth": 220,
+          "resizeMode": "contain"
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
