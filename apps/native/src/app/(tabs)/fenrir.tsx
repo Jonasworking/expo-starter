@@ -1,6 +1,8 @@
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import {
   Platform,
+  Pressable,
   ScrollView,
   type TextStyle,
   useWindowDimensions,
@@ -148,7 +150,11 @@ export default function Fenrir() {
         </View>
 
         {/* Rolling completion */}
-        <View className="gap-3 rounded-[22px] border border-border bg-card p-6">
+        {/* TODO: temporary debug tap. Remove when flame tap handler is wired. */}
+        <Pressable
+          className="gap-3 rounded-[22px] border border-border bg-card p-6"
+          onPress={() => router.push("/streak-path")}
+        >
           <View className="flex-row items-center justify-between">
             <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
               Last 7 Days
@@ -170,7 +176,7 @@ export default function Fenrir() {
             A rolling window beats a brittle streak. Miss a day or two — the
             path remains.
           </Text>
-        </View>
+        </Pressable>
 
         {/* 66-day habit automaticity */}
         <View className="gap-3 rounded-[22px] border border-border bg-card p-6">
