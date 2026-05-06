@@ -40,14 +40,21 @@ export function getFenrirMood(state: AppStateData, now: Date): FenrirMood {
   const todayKey = toDateKey(now);
   const today = state.days[todayKey];
 
-  // Streak broken: yesterday wasn't sealed, but the user has been sealing
-  // days before. Without the prior-history check, brand-new users would land
-  // on the sad wolf on day one — that's not the mood we want for them.
+  // Streak broken: BOTH today and yesterday are unsealed AND the user has
+  // sealed at least one day strictly before yesterday. The strict-before check
+  // (using YYYY-MM-DD string comparison, which sorts chronologically) prevents
+  // a first-time user who seals today from registering as "broken" — there
+  // can't be a broken path if it was just laid down today.
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayDay = state.days[toDateKey(yesterday)];
-  const hasPriorSealed = Object.values(state.days).some((d) => d.sealed);
-  if (hasPriorSealed && !yesterdayDay?.sealed) {
+  const yesterdayKey = toDateKey(yesterday);
+  const yesterdayDay = state.days[yesterdayKey];
+  const todaySealed = today?.sealed ?? false;
+  const yesterdaySealed = yesterdayDay?.sealed ?? false;
+  const hasSealedBeforeYesterday = Object.entries(state.days).some(
+    ([key, day]) => day.sealed && key < yesterdayKey
+  );
+  if (!(todaySealed || yesterdaySealed) && hasSealedBeforeYesterday) {
     return "sad";
   }
 
