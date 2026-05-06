@@ -123,6 +123,8 @@ export default {
     "ph:arrows-clockwise-bold",
     "ph:heart-bold",
     "ph:fire-fill",
+    "ph:crown-fill",
+    "ph:shield-check-fill",
   ],
   collections: [],
   plugins: [

@@ -9,9 +9,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EmberPill } from "@/components/ember-pill";
 import { HeaderAvatar } from "@/components/header-avatar";
-import { CrownBoldIcon } from "@/components/icons/solar/crown-bold";
-import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
-import { ShieldCheckBoldIcon } from "@/components/icons/solar/shield-check-bold";
+import { CrownFillIcon } from "@/components/icons/ph/crown-fill";
+import { FireFillIcon } from "@/components/icons/ph/fire-fill";
+import { ShieldCheckFillIcon } from "@/components/icons/ph/shield-check-fill";
 import { Text } from "@/components/ui/text";
 import {
   getRankTitle,
@@ -205,7 +205,7 @@ export default function Fenrir() {
         {/* Stats grid */}
         <View className="flex-row gap-3">
           <View className="flex-1 items-center gap-2 rounded-[18px] border border-border bg-card p-4">
-            <FireBoldIcon className="size-6 text-accent" />
+            <FireFillIcon className="size-6 text-accent" />
             <Text className="font-bold text-[26px] text-foreground">
               {streak}
             </Text>
@@ -215,7 +215,7 @@ export default function Fenrir() {
           </View>
 
           <View className="flex-1 items-center gap-2 rounded-[18px] border border-border bg-card p-4">
-            <ShieldCheckBoldIcon className="size-6 text-foreground" />
+            <ShieldCheckFillIcon className="size-6 text-foreground" />
             <Text className="font-bold text-[26px] text-foreground">
               {fenrir.totalTrials}
             </Text>
@@ -225,7 +225,7 @@ export default function Fenrir() {
           </View>
 
           <View className="flex-1 items-center gap-2 rounded-[18px] border border-border bg-card p-4">
-            <CrownBoldIcon className="size-6 text-foreground" />
+            <CrownFillIcon className="size-6 text-foreground" />
             <Text className="font-bold text-[26px] text-foreground">
               {toRoman(fenrir.rank)}
             </Text>
