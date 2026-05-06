@@ -311,6 +311,9 @@ interface FenrirData {
 interface AppStateData {
   hasOnboarded: boolean;
   userName: string;
+  userInitialReason: string | null;
+  userInitialReasonDate: string | null;
+  needsWhyRewrite: boolean;
   reminderTime: string;
   reminderEnabled: boolean;
   streak: number;
@@ -322,6 +325,9 @@ interface AppStateData {
 const DEFAULT_STATE: AppStateData = {
   hasOnboarded: false,
   userName: "Warrior",
+  userInitialReason: null,
+  userInitialReasonDate: null,
+  needsWhyRewrite: false,
   reminderTime: "08:00",
   reminderEnabled: true,
   streak: 0,
@@ -370,6 +376,7 @@ interface AppStateContextType {
   setUserName: (name: string) => void;
   setReminderTime: (time: string) => void;
   setReminderEnabled: (enabled: boolean) => void;
+  setUserInitialReason: (text: string) => void;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(
@@ -861,6 +868,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, reminderEnabled: enabled }));
   }, []);
 
+  const setUserInitialReason = useCallback((text: string) => {
+    setState((prev) => ({
+      ...prev,
+      userInitialReason: text,
+      userInitialReasonDate: toDateKey(),
+      needsWhyRewrite: false,
+    }));
+  }, []);
+
   // Keep the OS-scheduled reminder in sync with reminderTime + enabled. First
   // schedule prompts for permission; later changes silently re-schedule. We
   // skip the welcome screen so the permission dialog doesn't appear before
@@ -942,6 +958,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setUserName,
       setReminderTime,
       setReminderEnabled,
+      setUserInitialReason,
     }),
     [
       isLoaded,
@@ -965,6 +982,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setUserName,
       setReminderTime,
       setReminderEnabled,
+      setUserInitialReason,
     ]
   );
 

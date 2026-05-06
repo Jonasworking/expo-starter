@@ -13,5 +13,5 @@ export default function Index() {
     return <Redirect href="/(tabs)" />;
   }
 
-  return <Redirect href="/welcome" />;
+  return <Redirect href="/onboarding" />;
 }
