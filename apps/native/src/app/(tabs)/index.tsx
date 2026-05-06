@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DailyPracticesSection } from "@/components/daily-practices";
 import { EmberPill } from "@/components/ember-pill";
 import { HeaderAvatar } from "@/components/header-avatar";
+import { TrialCardUnrevealed } from "@/components/trial-card-unrevealed";
 import { CaretRightBoldIcon } from "@/components/icons/ph/caret-right-bold";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
 import { DotsThreeBoldIcon } from "@/components/icons/ph/dots-three-bold";
@@ -23,7 +24,6 @@ import {
   toDateKey,
   useAppState,
 } from "@/contexts/app-state-context";
-import { getTrialCardQuote } from "@/lib/trial-card-quotes";
 
 const ROMAN = [
   "I",
@@ -448,23 +448,11 @@ export default function Today() {
                 )}
               </View>
             ) : (
-              <Pressable
-                className="items-center rounded-[22px] border border-border bg-card p-8"
-                onPress={() => markTrialCardRevealed(activeTrial.id)}
-              >
-                <Text className="font-serif text-[22px] text-foreground">
-                  Today's Challenge
-                </Text>
-                <Text
-                  className="mt-4 px-2 text-center text-[14px] text-muted-foreground"
-                  style={{ fontStyle: "italic", lineHeight: 22 }}
-                >
-                  {getTrialCardQuote(activeTrial.id)}
-                </Text>
-                <Text className="mt-6 font-semibold text-[11px] text-muted-foreground uppercase tracking-widest">
-                  Tap to reveal
-                </Text>
-              </Pressable>
+              <TrialCardUnrevealed
+                activeTrial={activeTrial}
+                currentDayInTrial={state.fenrir.currentDayInTrial}
+                onRevealed={markTrialCardRevealed}
+              />
             )
           ) : (
             <Pressable
