@@ -848,14 +848,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  // Reset wipes streaks/trials AND the onboarding fields so the next launch
+  // re-runs the full ritual from Screen 1. We do not preserve userName or
+  // reminder settings — they are part of what the user re-commits to.
   const resetProgress = useCallback(() => {
-    setState((prev) => ({
-      ...DEFAULT_STATE,
-      hasOnboarded: true,
-      userName: prev.userName,
-      reminderTime: prev.reminderTime,
-      reminderEnabled: prev.reminderEnabled,
-    }));
+    setState(() => ({ ...DEFAULT_STATE }));
   }, []);
 
   const setUserName = useCallback((name: string) => {

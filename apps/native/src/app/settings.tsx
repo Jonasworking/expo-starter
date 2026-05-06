@@ -66,7 +66,9 @@ export default function Settings() {
           style: "destructive",
           onPress: () => {
             resetProgress();
-            router.replace("/(tabs)");
+            // resetProgress wipes hasOnboarded, so the root index will route
+            // back through the onboarding flow on next mount.
+            router.replace("/");
           },
         },
       ]
