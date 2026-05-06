@@ -13,6 +13,7 @@ export default function OnboardingLayout() {
       <Stack.Screen name="why" />
       <Stack.Screen name="name" />
       <Stack.Screen name="reminder" />
+      <Stack.Screen name="path" />
       <Stack.Screen name="oath" />
     </Stack>
   );

@@ -62,7 +62,7 @@ export default function Reminder() {
       );
     }
 
-    router.push("/onboarding/oath");
+    router.push("/onboarding/path");
   };
 
   return (
