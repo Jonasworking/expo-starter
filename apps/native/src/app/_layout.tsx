@@ -76,6 +76,8 @@ function RootStack() {
       <Stack.Screen name="reminder" options={{ headerShown: false }} />
       <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
       <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
+      <Stack.Screen name="your-why" options={{ headerShown: false }} />
+      <Stack.Screen name="your-why-rewrite" options={{ headerShown: false }} />
       <Stack.Screen name="trial-select" options={{ headerShown: false }} />
       <Stack.Screen name="practice-select" options={{ headerShown: false }} />
       <Stack.Screen

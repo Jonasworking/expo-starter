@@ -121,6 +121,7 @@ export default {
     "ph:pencil-simple-bold",
     "ph:dots-three-bold",
     "ph:arrows-clockwise-bold",
+    "ph:heart-bold",
   ],
   collections: [],
   plugins: [

@@ -5,15 +5,55 @@ import { Avatar } from "@/components/avatar";
 import { ArrowLeftIcon } from "@/components/icons/ph/arrow-left";
 import { BellBoldIcon } from "@/components/icons/ph/bell-bold";
 import { CaretRightBoldIcon } from "@/components/icons/ph/caret-right-bold";
+import { HeartBoldIcon } from "@/components/icons/ph/heart-bold";
 import { ShieldBoldIcon } from "@/components/icons/ph/shield-bold";
 import { TrashBoldIcon } from "@/components/icons/ph/trash-bold";
 import { UserCircleBoldIcon } from "@/components/icons/ph/user-circle-bold";
 import { Text } from "@/components/ui/text";
 import { getRankTitle, useAppState } from "@/contexts/app-state-context";
 
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function formatWhyDate(dateKey: string | null): string | null {
+  if (!dateKey) {
+    return null;
+  }
+  const [y, m, d] = dateKey.split("-").map(Number);
+  if (!(y && m && d)) {
+    return null;
+  }
+  const month = MONTH_LABELS[m - 1] ?? "";
+  return `${d} ${month} ${y}`;
+}
+
 export default function Settings() {
   const insets = useSafeAreaInsets();
   const { state, resetProgress } = useAppState();
+
+  const whyDateLabel = formatWhyDate(state.userInitialReasonDate);
+
+  const handleOpenWhy = () => {
+    if (state.userInitialReason) {
+      router.push("/your-why");
+      return;
+    }
+    // Edge case: user reached settings without a stored why (e.g. legacy
+    // install pre-onboarding update). Send them to write one now.
+    router.push("/your-why-rewrite");
+  };
 
   const handleReset = () => {
     Alert.alert(
@@ -97,6 +137,26 @@ export default function Settings() {
               <Text className="font-medium text-base text-foreground">
                 Edit Profile
               </Text>
+            </View>
+            <CaretRightBoldIcon className="size-4 text-muted-foreground" />
+          </Pressable>
+
+          <Pressable
+            className="h-16 flex-row items-center justify-between border-border border-b px-6 active:bg-muted/50"
+            onPress={handleOpenWhy}
+          >
+            <View className="flex-row items-center gap-3">
+              <HeartBoldIcon className="size-6 text-foreground" />
+              <View className="flex-col">
+                <Text className="font-medium text-base text-foreground">
+                  Your Why
+                </Text>
+                {whyDateLabel ? (
+                  <Text className="text-[12px] text-muted-foreground">
+                    Set {whyDateLabel}
+                  </Text>
+                ) : null}
+              </View>
             </View>
             <CaretRightBoldIcon className="size-4 text-muted-foreground" />
           </Pressable>

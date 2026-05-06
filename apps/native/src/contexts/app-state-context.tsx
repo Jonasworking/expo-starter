@@ -377,6 +377,8 @@ interface AppStateContextType {
   setReminderTime: (time: string) => void;
   setReminderEnabled: (enabled: boolean) => void;
   setUserInitialReason: (text: string) => void;
+  clearUserInitialReason: () => void;
+  clearNeedsWhyRewrite: () => void;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(
@@ -877,6 +879,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const clearUserInitialReason = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      userInitialReason: null,
+      userInitialReasonDate: null,
+      needsWhyRewrite: true,
+    }));
+  }, []);
+
+  const clearNeedsWhyRewrite = useCallback(() => {
+    setState((prev) =>
+      prev.needsWhyRewrite ? { ...prev, needsWhyRewrite: false } : prev
+    );
+  }, []);
+
   // Keep the OS-scheduled reminder in sync with reminderTime + enabled. First
   // schedule prompts for permission; later changes silently re-schedule. We
   // skip the welcome screen so the permission dialog doesn't appear before
@@ -959,6 +976,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setReminderTime,
       setReminderEnabled,
       setUserInitialReason,
+      clearUserInitialReason,
+      clearNeedsWhyRewrite,
     }),
     [
       isLoaded,
@@ -983,6 +1002,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setReminderTime,
       setReminderEnabled,
       setUserInitialReason,
+      clearUserInitialReason,
+      clearNeedsWhyRewrite,
     ]
   );
 
