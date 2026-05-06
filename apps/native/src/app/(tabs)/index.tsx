@@ -3,11 +3,18 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { DailyPracticesSection } from "@/components/daily-practices";
+import { EmberPill } from "@/components/ember-pill";
 import { HeaderAvatar } from "@/components/header-avatar";
 import { CaretRightBoldIcon } from "@/components/icons/ph/caret-right-bold";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
 import { DotsThreeBoldIcon } from "@/components/icons/ph/dots-three-bold";
-import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
+import { ReflectionBottomSheet } from "@/components/reflection/reflection-bottom-sheet";
+import {
+  CompactReflectionRow,
+  ReflectionPromptCard,
+} from "@/components/reflection/reflection-cards";
+import { ReflectionDetailSheet } from "@/components/reflection/reflection-detail-sheet";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Text } from "@/components/ui/text";
 import {
@@ -16,13 +23,6 @@ import {
   toDateKey,
   useAppState,
 } from "@/contexts/app-state-context";
-import { DailyPracticesSection } from "@/components/daily-practices";
-import { ReflectionBottomSheet } from "@/components/reflection/reflection-bottom-sheet";
-import {
-  CompactReflectionRow,
-  ReflectionPromptCard,
-} from "@/components/reflection/reflection-cards";
-import { ReflectionDetailSheet } from "@/components/reflection/reflection-detail-sheet";
 
 const ROMAN = [
   "I",
@@ -324,12 +324,7 @@ export default function Today() {
           style={{ paddingTop: insets.top + 16, height: insets.top + 64 }}
         >
           <View className="w-16 items-start">
-            <View className="flex-row items-center rounded-full bg-card px-3 py-1.5">
-              <FireBoldIcon className="size-4 text-accent" />
-              <Text className="ml-1.5 font-semibold text-[15px] text-foreground">
-                {state.streak}
-              </Text>
-            </View>
+            <EmberPill />
           </View>
 
           <View className="flex-1 items-center px-2">

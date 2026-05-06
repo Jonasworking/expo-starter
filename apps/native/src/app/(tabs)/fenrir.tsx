@@ -1,14 +1,13 @@
 import { Image } from "expo-image";
-import { router } from "expo-router";
 import {
   Platform,
-  Pressable,
   ScrollView,
   type TextStyle,
   useWindowDimensions,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { EmberPill } from "@/components/ember-pill";
 import { HeaderAvatar } from "@/components/header-avatar";
 import { CrownBoldIcon } from "@/components/icons/solar/crown-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
@@ -75,12 +74,7 @@ export default function Fenrir() {
         style={{ paddingTop: insets.top + 16 }}
       >
         <View className="w-16 items-start">
-          <View className="flex-row items-center rounded-full bg-card px-3 py-1.5">
-            <FireBoldIcon className="size-4 text-accent" />
-            <Text className="ml-1.5 font-semibold text-[15px] text-foreground">
-              {streak}
-            </Text>
-          </View>
+          <EmberPill />
         </View>
         <View className="flex-1" />
         <View className="w-16 items-end">
@@ -150,11 +144,7 @@ export default function Fenrir() {
         </View>
 
         {/* Rolling completion */}
-        {/* TODO: temporary debug tap. Remove when flame tap handler is wired. */}
-        <Pressable
-          className="gap-3 rounded-[22px] border border-border bg-card p-6"
-          onPress={() => router.push("/streak-path")}
-        >
+        <View className="gap-3 rounded-[22px] border border-border bg-card p-6">
           <View className="flex-row items-center justify-between">
             <Text className="font-semibold text-[12px] text-muted-foreground uppercase tracking-widest">
               Last 7 Days
@@ -176,7 +166,7 @@ export default function Fenrir() {
             A rolling window beats a brittle streak. Miss a day or two — the
             path remains.
           </Text>
-        </Pressable>
+        </View>
 
         {/* 66-day habit automaticity */}
         <View className="gap-3 rounded-[22px] border border-border bg-card p-6">
