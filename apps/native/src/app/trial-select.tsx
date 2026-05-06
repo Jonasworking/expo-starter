@@ -146,7 +146,11 @@ export default function TrialSelect() {
           >
             <Text
               className="font-serif text-[64px] text-foreground"
-              style={{ lineHeight: 84, paddingVertical: 12 }}
+              style={{
+                lineHeight: 84,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+              }}
             >
               ???
             </Text>
