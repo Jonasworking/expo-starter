@@ -25,7 +25,7 @@ import { scheduleDailyReminder } from "@/lib/notifications";
 
 // Minimum time the branded splash overlay stays visible after fonts load.
 // Total perceived splash ≈ native splash (until fonts load) + this hold.
-const SPLASH_MIN_VISIBLE_MS = 1500;
+const SPLASH_MIN_VISIBLE_MS = 2500;
 
 preventAutoHideAsync();
 
