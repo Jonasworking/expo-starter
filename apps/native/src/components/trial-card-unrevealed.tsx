@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
@@ -98,10 +98,17 @@ export function TrialCardUnrevealed({
       translateY.value = withTiming(0, { duration: SNAP_BACK_MS });
     });
 
-  const cardStyle = useAnimatedStyle(() => ({
+  // Split lift and rotation across two layers: the outer wrapper translates
+  // with the gesture (visible lift), the inner wrapper does the 3D rotation
+  // inside a static clip layer. iOS doesn't clip 3D-transformed children
+  // reliably when overflow:hidden is on the rotating element itself.
+  const liftStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  const rotateStyle = useAnimatedStyle(() => ({
     transform: [
       { perspective: 1000 },
-      { translateY: translateY.value },
       { rotateY: `${rotation.value * 180}deg` },
     ],
   }));
@@ -134,70 +141,84 @@ export function TrialCardUnrevealed({
 
   return (
     <GestureDetector gesture={pan}>
-      <Animated.View
-        className="overflow-hidden rounded-[22px] border border-border bg-card"
-        style={[{ minHeight: CARD_MIN_HEIGHT }, cardStyle]}
-      >
-        {/* Back face — visible until the card crosses the half-way point */}
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            backStyle,
-            {
-              padding: 32,
-              alignItems: "center",
-              justifyContent: "center",
-            },
-          ]}
+      <Animated.View style={liftStyle}>
+        {/* Static clip layer — non-rotating, solid bg, rounded, overflow
+            hidden. Acts as the bounding mask so the 3D rotation inside
+            never leaks past the card's visual shape onto siblings above. */}
+        <View
+          className="overflow-hidden rounded-[22px] border border-border bg-card"
+          style={{ minHeight: CARD_MIN_HEIGHT }}
         >
-          <Text className="font-serif text-[80px] text-foreground leading-none">
-            ???
-          </Text>
-          <Text
-            className="mt-6 px-2 text-center text-[13px] text-muted-foreground"
-            style={{ fontStyle: "italic" }}
-          >
-            Swipe to reveal your trial.
-          </Text>
-        </Animated.View>
+          <Animated.View style={[StyleSheet.absoluteFill, rotateStyle]}>
+            {/* Back face — visible until the card crosses the half-way point */}
+            <Animated.View
+              style={[
+                StyleSheet.absoluteFill,
+                backStyle,
+                {
+                  padding: 32,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "transparent",
+                },
+              ]}
+            >
+              <Text className="font-serif text-[80px] text-foreground leading-none">
+                ???
+              </Text>
+              <Text
+                className="mt-6 px-2 text-center text-[13px] text-muted-foreground"
+                style={{ fontStyle: "italic" }}
+              >
+                Swipe to reveal your trial.
+              </Text>
+            </Animated.View>
 
-        {/* Front face — pre-rotated so it reads correctly post-flip. The
-            real interactive front (with reroll + complete buttons) takes
-            over once the parent re-renders after onRevealed fires. */}
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            frontStyle,
-            { padding: 32, alignItems: "center" },
-          ]}
-        >
-          <Text className="mb-1 font-heading-bold text-[26px] text-foreground">
-            {activeTrial.title}
-          </Text>
-          <Text className="mb-6 font-medium text-[13px] text-muted-foreground">
-            Day {toRoman(currentDayInTrial)} of {toRoman(activeTrial.days)}
-          </Text>
-          <Text className="px-4 text-center font-medium text-[18px] text-foreground leading-relaxed">
-            {activeTrial.description}
-          </Text>
-        </Animated.View>
+            {/* Front face — pre-rotated so it reads correctly post-flip. The
+                real interactive front (with reroll + complete buttons) takes
+                over once the parent re-renders after onRevealed fires. */}
+            <Animated.View
+              style={[
+                StyleSheet.absoluteFill,
+                frontStyle,
+                {
+                  padding: 32,
+                  alignItems: "center",
+                  backgroundColor: "transparent",
+                },
+              ]}
+            >
+              <Text className="mb-1 font-heading-bold text-[26px] text-foreground">
+                {activeTrial.title}
+              </Text>
+              <Text className="mb-6 font-medium text-[13px] text-muted-foreground">
+                Day {toRoman(currentDayInTrial)} of {toRoman(activeTrial.days)}
+              </Text>
+              <Text className="px-4 text-center font-medium text-[18px] text-foreground leading-relaxed">
+                {activeTrial.description}
+              </Text>
+            </Animated.View>
 
-        {/* Shine strip — diagonal highlight that sweeps across during the
-            rotation. pointerEvents none so it never intercepts the gesture. */}
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            shineStyle,
-            {
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              left: 0,
-              width: SHINE_WIDTH,
-              backgroundColor: "rgba(255,255,255,0.15)",
-            },
-          ]}
-        />
+            {/* Shine strip — diagonal highlight that sweeps across during the
+                rotation. pointerEvents none so it never intercepts the
+                gesture. Sits inside the rotating layer; the static clip
+                wrapper above ensures translation past card width is hidden. */}
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                shineStyle,
+                {
+                  position: "absolute",
+                  top: 0,
+                  bottom: 0,
+                  left: 0,
+                  width: SHINE_WIDTH,
+                  backgroundColor: "rgba(255,255,255,0.15)",
+                },
+              ]}
+            />
+          </Animated.View>
+        </View>
       </Animated.View>
     </GestureDetector>
   );
