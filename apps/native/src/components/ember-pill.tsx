@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { useEffect, useRef } from "react";
 import { Animated, Pressable } from "react-native";
-import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
+import { RoninFlame } from "@/components/icons/ronin-flame";
 import { Text } from "@/components/ui/text";
 import { useAppState } from "@/contexts/app-state-context";
 
@@ -45,7 +45,7 @@ export function EmberPill() {
         hitSlop={6}
         onPress={() => router.push("/streak-path")}
       >
-        <FireBoldIcon className="size-4 text-accent" />
+        <RoninFlame size={14} />
         <Text className="ml-1.5 font-semibold text-[15px] text-foreground">
           {state.streak}
         </Text>
