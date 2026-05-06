@@ -4,7 +4,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   TextInput,
   View,
 } from "react-native";
@@ -16,6 +15,9 @@ import { useThemeColor } from "@/lib/theme/use-theme-color";
 
 const MIN_REASON_LENGTH = 20;
 const MAX_REASON_LENGTH = 500;
+// Fixed input height — bounded so the screen never grows past the keyboard;
+// internal TextInput scrolling kicks in once the user types past it.
+const INPUT_HEIGHT = 160;
 
 export default function Why() {
   const insets = useSafeAreaInsets();
@@ -40,54 +42,49 @@ export default function Why() {
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        className="flex-1"
+        className="flex-1 px-8 pt-12"
         keyboardVerticalOffset={insets.top}
       >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 32 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className="flex-1 pt-12">
-            <Text className="font-serif text-[36px] text-foreground leading-tight">
-              Why are you here?
-            </Text>
-            <Text className="mt-3 font-medium text-[15px] text-muted-foreground leading-relaxed">
-              Be honest. Be precise. No one will read this but you.
-            </Text>
+        <View className="flex-1">
+          <Text className="font-serif text-[36px] text-foreground leading-tight">
+            Why are you here?
+          </Text>
+          <Text className="mt-3 font-medium text-[15px] text-muted-foreground leading-relaxed">
+            Be honest. Be precise. No one will read this but you.
+          </Text>
 
-            <View className="mt-8 rounded-[22px] border border-border bg-card px-5 py-4">
-              <TextInput
-                autoFocus
-                maxLength={MAX_REASON_LENGTH}
-                multiline
-                onChangeText={setReason}
-                placeholder="I want to stop..."
-                placeholderTextColor={mutedForeground}
-                style={{
-                  minHeight: 120,
-                  fontSize: 17,
-                  color: foreground,
-                  fontFamily: "Inter_400Regular",
-                  padding: 0,
-                  // Small leading inset so the blinking cursor sits LEFT of the
-                  // placeholder's "I" instead of fusing into the I's stem.
-                  paddingLeft: 4,
-                  textAlignVertical: "top",
-                }}
-                value={reason}
-              />
-            </View>
-
-            <Text className="mt-3 text-[13px] text-muted-foreground">
-              {trimmed.length < MIN_REASON_LENGTH
-                ? `${MIN_REASON_LENGTH - trimmed.length} more characters required`
-                : `${trimmed.length} / ${MAX_REASON_LENGTH}`}
-            </Text>
+          <View className="mt-8 rounded-[22px] border border-border bg-card px-5 py-4">
+            <TextInput
+              autoFocus
+              maxLength={MAX_REASON_LENGTH}
+              multiline
+              onChangeText={setReason}
+              placeholder="I want to stop..."
+              placeholderTextColor={mutedForeground}
+              style={{
+                height: INPUT_HEIGHT,
+                fontSize: 17,
+                color: foreground,
+                fontFamily: "Inter_400Regular",
+                padding: 0,
+                // Small leading inset so the blinking cursor sits LEFT of the
+                // placeholder's "I" instead of fusing into the I's stem.
+                paddingLeft: 4,
+                textAlignVertical: "top",
+              }}
+              value={reason}
+            />
           </View>
-        </ScrollView>
+
+          <Text className="mt-3 text-[13px] text-muted-foreground">
+            {trimmed.length < MIN_REASON_LENGTH
+              ? `${MIN_REASON_LENGTH - trimmed.length} more characters required`
+              : `${trimmed.length} / ${MAX_REASON_LENGTH}`}
+          </Text>
+        </View>
 
         <View
-          className="px-8 pt-6"
+          className="pt-6"
           style={{ paddingBottom: Math.max(insets.bottom, 32) }}
         >
           <Pressable
