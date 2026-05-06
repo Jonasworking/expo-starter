@@ -122,6 +122,7 @@ export default {
     "ph:dots-three-bold",
     "ph:arrows-clockwise-bold",
     "ph:heart-bold",
+    "ph:fire-fill",
   ],
   collections: [],
   plugins: [

@@ -3,8 +3,8 @@ import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CaretRightBoldIcon } from "@/components/icons/ph/caret-right-bold";
+import { FireFillIcon } from "@/components/icons/ph/fire-fill";
 import { XIcon } from "@/components/icons/ph/x";
-import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
 import { Text } from "@/components/ui/text";
 import { toDateKey, useAppState } from "@/contexts/app-state-context";
 
@@ -262,7 +262,7 @@ export default function StreakPath() {
         >
           <XIcon className="size-6 text-foreground" />
         </Pressable>
-        <Text className="flex-1 pr-10 text-center font-serif text-[22px] text-foreground">
+        <Text className="flex-1 pr-10 text-center font-serif text-[24px] text-foreground">
           the path.
         </Text>
       </View>
@@ -277,14 +277,17 @@ export default function StreakPath() {
         {/* Total sealed + flame */}
         <View className="mt-8 flex-row items-center justify-between">
           <View className="flex-col">
-            <Text className="font-serif text-[56px] text-foreground leading-none">
+            <Text
+              className="font-serif text-[60px] text-foreground"
+              style={{ lineHeight: 60 }}
+            >
               {totalSealed}
             </Text>
             <Text className="mt-2 font-semibold text-[11px] text-muted-foreground uppercase tracking-widest">
               Days Sealed
             </Text>
           </View>
-          <FireBoldIcon className="size-14 text-foreground" />
+          <FireFillIcon className="size-14 text-foreground" />
         </View>
 
         {/* Month navigation */}
