@@ -320,6 +320,10 @@ interface AppStateData {
   days: Record<string, DayData>;
   fenrir: FenrirData;
   dailyPractices: DailyPractices;
+  // Date-key (YYYY-MM-DD) of the most recent day on which the user revealed
+  // the Trial Card back. null means never revealed. Compared against today's
+  // key to decide whether to render the card flipped on mount.
+  trialCardRevealedDate: string | null;
 }
 
 const DEFAULT_STATE: AppStateData = {
@@ -342,6 +346,7 @@ const DEFAULT_STATE: AppStateData = {
     rerollUsed: false,
   },
   dailyPractices: DEFAULT_PRACTICES,
+  trialCardRevealedDate: null,
 };
 
 interface RollingStats {
@@ -379,6 +384,8 @@ interface AppStateContextType {
   setUserInitialReason: (text: string) => void;
   clearUserInitialReason: () => void;
   clearNeedsWhyRewrite: () => void;
+  isTrialCardRevealedToday: boolean;
+  markTrialCardRevealed: () => void;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(
@@ -891,6 +898,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const markTrialCardRevealed = useCallback(() => {
+    const today = toDateKey();
+    setState((prev) =>
+      prev.trialCardRevealedDate === today
+        ? prev
+        : { ...prev, trialCardRevealedDate: today }
+    );
+  }, []);
+
   // Keep the OS-scheduled reminder in sync with reminderTime + enabled. First
   // schedule prompts for permission; later changes silently re-schedule. We
   // skip the welcome screen so the permission dialog doesn't appear before
@@ -949,6 +965,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [state.days]
   );
 
+  const isTrialCardRevealedToday = useMemo(
+    () => state.trialCardRevealedDate === toDateKey(),
+    [state.trialCardRevealedDate]
+  );
+
   const value = useMemo<AppStateContextType>(
     () => ({
       isLoaded,
@@ -975,6 +996,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setUserInitialReason,
       clearUserInitialReason,
       clearNeedsWhyRewrite,
+      isTrialCardRevealedToday,
+      markTrialCardRevealed,
     }),
     [
       isLoaded,
@@ -1001,6 +1024,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setUserInitialReason,
       clearUserInitialReason,
       clearNeedsWhyRewrite,
+      isTrialCardRevealedToday,
+      markTrialCardRevealed,
     ]
   );
 
