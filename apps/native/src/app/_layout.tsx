@@ -87,6 +87,7 @@ function RootStack() {
       <Stack.Screen name="your-why-rewrite" options={{ headerShown: false }} />
       <Stack.Screen name="trial-select" options={{ headerShown: false }} />
       <Stack.Screen name="practice-select" options={{ headerShown: false }} />
+      <Stack.Screen name="streak-path" options={{ headerShown: false }} />
       <Stack.Screen
         name="sealed"
         options={{ headerShown: false, presentation: "modal" }}
