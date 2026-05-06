@@ -1,6 +1,7 @@
 // Pool of philosophical quotes for the Trial Card back. Rotated
-// deterministically by date so the same calendar day always shows the
-// same quote, but consecutive days rotate through the pool.
+// deterministically by trial id so each trial carries one consistent
+// philosophical line for its entire run; picking a new trial picks a
+// (likely) new line.
 
 export const TRIAL_CARD_QUOTES: readonly string[] = [
   "Discipline begins with the choice to begin.",
@@ -16,16 +17,17 @@ export const TRIAL_CARD_QUOTES: readonly string[] = [
 ] as const;
 
 const FALLBACK = "Discipline does not announce itself.";
-const MS_PER_DAY = 86_400_000;
 
-export function getTrialCardQuote(now: Date): string {
-  const ms = now.getTime();
-  if (!Number.isFinite(ms)) {
+export function getTrialCardQuote(trialId: string): string {
+  if (!trialId) {
     return TRIAL_CARD_QUOTES[0] ?? FALLBACK;
   }
-  const daysSinceEpoch = Math.floor(ms / MS_PER_DAY);
+  let hash = 0;
+  for (let i = 0; i < trialId.length; i++) {
+    hash = (hash * 31 + trialId.charCodeAt(i)) | 0;
+  }
   const idx =
-    ((daysSinceEpoch % TRIAL_CARD_QUOTES.length) + TRIAL_CARD_QUOTES.length) %
+    ((hash % TRIAL_CARD_QUOTES.length) + TRIAL_CARD_QUOTES.length) %
     TRIAL_CARD_QUOTES.length;
   return TRIAL_CARD_QUOTES[idx] ?? FALLBACK;
 }

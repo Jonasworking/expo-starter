@@ -320,10 +320,11 @@ interface AppStateData {
   days: Record<string, DayData>;
   fenrir: FenrirData;
   dailyPractices: DailyPractices;
-  // Date-key (YYYY-MM-DD) of the most recent day on which the user revealed
-  // the Trial Card back. null means never revealed. Compared against today's
-  // key to decide whether to render the card flipped on mount.
-  trialCardRevealedDate: string | null;
+  // ID of the trial whose card back was last revealed. null means never
+  // revealed. Compared against state.fenrir.activeTrialId to decide whether
+  // to render the card flipped on mount — picking a new trial naturally
+  // un-reveals the card without an explicit reset.
+  trialCardRevealedTrialId: string | null;
 }
 
 const DEFAULT_STATE: AppStateData = {
@@ -346,7 +347,7 @@ const DEFAULT_STATE: AppStateData = {
     rerollUsed: false,
   },
   dailyPractices: DEFAULT_PRACTICES,
-  trialCardRevealedDate: null,
+  trialCardRevealedTrialId: null,
 };
 
 interface RollingStats {
@@ -384,8 +385,8 @@ interface AppStateContextType {
   setUserInitialReason: (text: string) => void;
   clearUserInitialReason: () => void;
   clearNeedsWhyRewrite: () => void;
-  isTrialCardRevealedToday: boolean;
-  markTrialCardRevealed: () => void;
+  isTrialCardRevealed: boolean;
+  markTrialCardRevealed: (trialId: string) => void;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(
@@ -528,9 +529,15 @@ function mergeWithDefaults(loaded: Partial<AppStateData>): AppStateData {
     fenrir.trialStartDate = fenrir.activeTrialId ? toDateKey() : null;
   }
 
+  // Drop the legacy per-day trial card field. It was replaced with the
+  // per-trial trialCardRevealedTrialId; existing installs that have it land
+  // on the new default (null) and re-flip once for their current trial.
+  const { trialCardRevealedDate: _trialCardRevealedDate, ...loadedSansLegacy } =
+    loaded as Partial<AppStateData> & { trialCardRevealedDate?: unknown };
+
   return {
     ...DEFAULT_STATE,
-    ...loaded,
+    ...loadedSansLegacy,
     fenrir,
     days,
     dailyPractices: migratePractices(
@@ -898,12 +905,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
-  const markTrialCardRevealed = useCallback(() => {
-    const today = toDateKey();
+  const markTrialCardRevealed = useCallback((trialId: string) => {
     setState((prev) =>
-      prev.trialCardRevealedDate === today
+      prev.trialCardRevealedTrialId === trialId
         ? prev
-        : { ...prev, trialCardRevealedDate: today }
+        : { ...prev, trialCardRevealedTrialId: trialId }
     );
   }, []);
 
@@ -965,9 +971,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     [state.days]
   );
 
-  const isTrialCardRevealedToday = useMemo(
-    () => state.trialCardRevealedDate === toDateKey(),
-    [state.trialCardRevealedDate]
+  const isTrialCardRevealed = useMemo(
+    () =>
+      state.fenrir.activeTrialId !== null &&
+      state.trialCardRevealedTrialId === state.fenrir.activeTrialId,
+    [state.trialCardRevealedTrialId, state.fenrir.activeTrialId]
   );
 
   const value = useMemo<AppStateContextType>(
@@ -996,7 +1004,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setUserInitialReason,
       clearUserInitialReason,
       clearNeedsWhyRewrite,
-      isTrialCardRevealedToday,
+      isTrialCardRevealed,
       markTrialCardRevealed,
     }),
     [
@@ -1024,7 +1032,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setUserInitialReason,
       clearUserInitialReason,
       clearNeedsWhyRewrite,
-      isTrialCardRevealedToday,
+      isTrialCardRevealed,
       markTrialCardRevealed,
     ]
   );
