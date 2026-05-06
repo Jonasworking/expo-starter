@@ -87,7 +87,7 @@ export default function Why() {
         </ScrollView>
 
         <View
-          className="px-8"
+          className="px-8 pt-6"
           style={{ paddingBottom: Math.max(insets.bottom, 32) }}
         >
           <Pressable
