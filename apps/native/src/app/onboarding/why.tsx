@@ -69,6 +69,9 @@ export default function Why() {
                   color: foreground,
                   fontFamily: "Inter_400Regular",
                   padding: 0,
+                  // Small leading inset so the blinking cursor sits LEFT of the
+                  // placeholder's "I" instead of fusing into the I's stem.
+                  paddingLeft: 4,
                   textAlignVertical: "top",
                 }}
                 value={reason}
@@ -104,7 +107,7 @@ export default function Why() {
         cancelLabel="Rewrite"
         confirmLabel="Confirm"
         description={
-          "This is your anchor. The reason you keep walking when the path gets hard.\n\nOnce written, it stays."
+          "This is your anchor. The reason you keep walking when the path gets hard.\n\nChoose carefully."
         }
         onCancel={() => setConfirmOpen(false)}
         onConfirm={handleConfirm}

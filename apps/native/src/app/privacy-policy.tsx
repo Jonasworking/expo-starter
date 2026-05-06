@@ -59,7 +59,7 @@ export default function PrivacyPolicy() {
         </Section>
 
         <Text className="pt-2 text-[13px] text-muted-foreground">
-          Last updated: 2026
+          Last updated: May 2026
         </Text>
       </ScrollView>
     </View>
