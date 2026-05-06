@@ -17,7 +17,7 @@ const MIN_REASON_LENGTH = 20;
 const MAX_REASON_LENGTH = 500;
 // Fixed input height — bounded so the screen never grows past the keyboard;
 // internal TextInput scrolling kicks in once the user types past it.
-const INPUT_HEIGHT = 160;
+const INPUT_HEIGHT = 120;
 
 export default function Why() {
   const insets = useSafeAreaInsets();
@@ -76,15 +76,14 @@ export default function Why() {
           />
         </View>
 
-        <Text className="mt-3 text-[13px] text-muted-foreground">
+        <Text
+          className="text-[13px] text-muted-foreground"
+          style={{ marginTop: 16, marginBottom: 16 }}
+        >
           {trimmed.length < MIN_REASON_LENGTH
             ? `${MIN_REASON_LENGTH - trimmed.length} more characters required`
             : `${trimmed.length} / ${MAX_REASON_LENGTH}`}
         </Text>
-
-        {/* Flex spacer — pushes the Continue button to the bottom edge of the
-            available area (or directly above the keyboard when open). */}
-        <View className="flex-1" />
 
         <View style={{ paddingBottom: Math.max(insets.bottom, 32) }}>
           <Pressable
