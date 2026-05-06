@@ -145,7 +145,7 @@ export default function TrialSelect() {
             style={{ minHeight: 280 }}
           >
             <Text
-              className="font-serif text-[64px] text-foreground"
+              className="font-bold text-[64px] text-foreground"
               style={{
                 lineHeight: 84,
                 paddingVertical: 12,
