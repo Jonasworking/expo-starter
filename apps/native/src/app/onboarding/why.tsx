@@ -48,7 +48,7 @@ export default function Why() {
           keyboardShouldPersistTaps="handled"
         >
           <View className="flex-1 pt-12">
-            <Text className="font-heading-bold text-[32px] text-foreground leading-tight">
+            <Text className="font-serif text-[36px] text-foreground leading-tight">
               Why are you here?
             </Text>
             <Text className="mt-3 font-medium text-[15px] text-muted-foreground leading-relaxed">
