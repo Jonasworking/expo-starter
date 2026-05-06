@@ -163,7 +163,10 @@ export function TrialCardUnrevealed({
                 },
               ]}
             >
-              <Text className="font-serif text-[80px] text-foreground leading-none">
+              <Text
+                className="font-serif text-[80px] text-foreground"
+                style={{ lineHeight: 104, paddingVertical: 12 }}
+              >
                 ???
               </Text>
               <Text

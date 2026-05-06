@@ -6,12 +6,12 @@ import { ArrowLeftIcon } from "@/components/icons/ph/arrow-left";
 import { CaretRightBoldIcon } from "@/components/icons/ph/caret-right-bold";
 import { FireBoldIcon } from "@/components/icons/solar/fire-bold";
 import { Text } from "@/components/ui/text";
-import { cn } from "@/lib/utils/cn";
 import {
   TRIAL_POOL,
   type TrialSelectionMode,
   useAppState,
 } from "@/contexts/app-state-context";
+import { cn } from "@/lib/utils/cn";
 
 const EMBERS_PER_DAY = 50;
 
@@ -144,7 +144,10 @@ export default function TrialSelect() {
             onPress={handleImposedAssign}
             style={{ minHeight: 280 }}
           >
-            <Text className="font-serif text-[64px] text-foreground leading-none">
+            <Text
+              className="font-serif text-[64px] text-foreground"
+              style={{ lineHeight: 84, paddingVertical: 12 }}
+            >
               ???
             </Text>
             <Text
