@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DailyPracticesSection } from "@/components/daily-practices";
 import { EmberPill } from "@/components/ember-pill";
 import { HeaderAvatar } from "@/components/header-avatar";
-import { TrialCardUnrevealed } from "@/components/trial-card-unrevealed";
 import { CaretRightBoldIcon } from "@/components/icons/ph/caret-right-bold";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
 import { DotsThreeBoldIcon } from "@/components/icons/ph/dots-three-bold";
@@ -16,6 +15,7 @@ import {
   ReflectionPromptCard,
 } from "@/components/reflection/reflection-cards";
 import { ReflectionDetailSheet } from "@/components/reflection/reflection-detail-sheet";
+import { TrialCardUnrevealed } from "@/components/trial-card-unrevealed";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Text } from "@/components/ui/text";
 import {
@@ -407,7 +407,14 @@ export default function Today() {
 
           {/* Trial card — Choose Your Trial CTA when none active, else active trial */}
           {activeTrial ? (
-            isTrialCardRevealed ? (
+            state.fenrir.trialSelectionMode === "imposed" &&
+            !isTrialCardRevealed ? (
+              <TrialCardUnrevealed
+                activeTrial={activeTrial}
+                currentDayInTrial={state.fenrir.currentDayInTrial}
+                onRevealed={markTrialCardRevealed}
+              />
+            ) : (
               <View className="items-center rounded-[22px] border border-border bg-card p-8">
                 {!state.fenrir.rerollUsed && (
                   <Pressable
@@ -447,12 +454,6 @@ export default function Today() {
                   </Pressable>
                 )}
               </View>
-            ) : (
-              <TrialCardUnrevealed
-                activeTrial={activeTrial}
-                currentDayInTrial={state.fenrir.currentDayInTrial}
-                onRevealed={markTrialCardRevealed}
-              />
             )
           ) : (
             <Pressable

@@ -298,6 +298,8 @@ function countActiveDays(days: Record<string, DayData>): number {
   return count;
 }
 
+type TrialSelectionMode = "self-chosen" | "imposed";
+
 interface FenrirData {
   rank: number;
   embersTowardNextRank: number;
@@ -306,6 +308,10 @@ interface FenrirData {
   trialStartDate: string | null;
   currentDayInTrial: number;
   rerollUsed: boolean;
+  // How the active trial was assigned. Drives whether the Today tab plays
+  // the swipe-up flip-reveal: only 'imposed' trials hide their face, since
+  // self-chosen trials are revealed by definition. null when no active trial.
+  trialSelectionMode: TrialSelectionMode | null;
 }
 
 interface AppStateData {
@@ -345,6 +351,7 @@ const DEFAULT_STATE: AppStateData = {
     trialStartDate: null,
     currentDayInTrial: 1,
     rerollUsed: false,
+    trialSelectionMode: null,
   },
   dailyPractices: DEFAULT_PRACTICES,
   trialCardRevealedTrialId: null,
@@ -374,7 +381,11 @@ interface AppStateContextType {
   ) => void;
   deleteReflection: (dateKey: string, kind?: ReflectionKind) => void;
   completeTrial: () => void;
-  selectTrial: (id: string, opts?: { reroll?: boolean }) => void;
+  selectTrial: (
+    id: string,
+    mode: TrialSelectionMode,
+    opts?: { reroll?: boolean }
+  ) => void;
   togglePractice: (id: string) => void;
   selectTodaysPractices: (ids: string[]) => void;
   sealDay: () => void;
@@ -619,6 +630,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           trialStartDate: null,
           currentDayInTrial: 1,
           rerollUsed: false,
+          trialSelectionMode: null,
         },
       }));
       return;
@@ -748,31 +760,38 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             ? 1
             : prev.fenrir.currentDayInTrial + 1,
           rerollUsed: finishedTrial ? false : prev.fenrir.rerollUsed,
+          trialSelectionMode: finishedTrial
+            ? null
+            : prev.fenrir.trialSelectionMode,
         },
       };
     });
   }, []);
 
-  const selectTrial = useCallback((id: string, opts?: { reroll?: boolean }) => {
-    const today = toDateKey();
-    setState((prev) => {
-      if (opts?.reroll && prev.fenrir.rerollUsed) {
-        // Already rerolled this trial — UI should hide the gear, but guard
-        // here too so a stale callback can't slip through.
-        return prev;
-      }
-      return {
-        ...prev,
-        fenrir: {
-          ...prev.fenrir,
-          activeTrialId: id,
-          trialStartDate: today,
-          currentDayInTrial: 1,
-          rerollUsed: Boolean(opts?.reroll),
-        },
-      };
-    });
-  }, []);
+  const selectTrial = useCallback(
+    (id: string, mode: TrialSelectionMode, opts?: { reroll?: boolean }) => {
+      const today = toDateKey();
+      setState((prev) => {
+        if (opts?.reroll && prev.fenrir.rerollUsed) {
+          // Already rerolled this trial — UI should hide the gear, but guard
+          // here too so a stale callback can't slip through.
+          return prev;
+        }
+        return {
+          ...prev,
+          fenrir: {
+            ...prev.fenrir,
+            activeTrialId: id,
+            trialStartDate: today,
+            currentDayInTrial: 1,
+            rerollUsed: Boolean(opts?.reroll),
+            trialSelectionMode: mode,
+          },
+        };
+      });
+    },
+    []
+  );
 
   const togglePractice = useCallback((id: string) => {
     setState((prev) => {
@@ -1075,4 +1094,5 @@ export type {
   PracticeIconName,
   PracticeCategory,
   ReflectionKind,
+  TrialSelectionMode,
 };

@@ -1,5 +1,5 @@
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
   interpolate,
@@ -10,7 +10,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { Text } from "@/components/ui/text";
 import type { Trial } from "@/contexts/app-state-context";
-import { getTrialCardQuote } from "@/lib/trial-card-quotes";
 
 const FLIP_DURATION_MS = 600;
 const SNAP_BACK_MS = 200;
@@ -151,17 +150,14 @@ export function TrialCardUnrevealed({
             },
           ]}
         >
-          <Text className="font-serif text-[22px] text-foreground">
-            Today's Challenge
+          <Text className="font-serif text-[80px] text-foreground leading-none">
+            ???
           </Text>
           <Text
-            className="mt-4 px-2 text-center text-[14px] text-muted-foreground"
-            style={{ fontStyle: "italic", lineHeight: 22 }}
+            className="mt-6 px-2 text-center text-[13px] text-muted-foreground"
+            style={{ fontStyle: "italic" }}
           >
-            {getTrialCardQuote(activeTrial.id)}
-          </Text>
-          <Text className="mt-6 font-semibold text-[11px] text-muted-foreground uppercase tracking-widest">
-            Swipe up to reveal
+            Swipe to reveal your trial.
           </Text>
         </Animated.View>
 
