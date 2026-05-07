@@ -7,27 +7,27 @@ interface RoninFlameProps {
 
 export function RoninFlame({ size = 24 }: RoninFlameProps) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Svg fill="none" height={size} viewBox="0 0 24 24" width={size}>
       <Defs>
         <LinearGradient
+          gradientUnits="userSpaceOnUse"
           id="flame-outer"
           x1="12"
-          y1="24"
           x2="12"
+          y1="24"
           y2="0"
-          gradientUnits="userSpaceOnUse"
         >
           <Stop offset="0" stopColor="#FAC775" />
           <Stop offset="0.5" stopColor="#D85A30" />
           <Stop offset="1" stopColor="#993C1D" />
         </LinearGradient>
         <LinearGradient
+          gradientUnits="userSpaceOnUse"
           id="flame-inner"
           x1="12"
-          y1="22"
           x2="12"
+          y1="22"
           y2="8"
-          gradientUnits="userSpaceOnUse"
         >
           <Stop offset="0" stopColor="#FAC775" stopOpacity="1" />
           <Stop offset="1" stopColor="#FAC775" stopOpacity="0" />
