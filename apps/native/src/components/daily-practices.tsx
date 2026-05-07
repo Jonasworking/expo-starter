@@ -49,7 +49,7 @@ export function DailyPracticesSection({
           Daily Practices
         </Text>
         <Pressable
-          className="items-center rounded-[22px] border border-border border-dashed bg-card p-8 active:scale-[0.99]"
+          className="items-center rounded-[22px] border border-border bg-card p-8 active:scale-[0.99]"
           onPress={() => router.push("/practice-select")}
         >
           <Text className="mb-2 font-heading-bold text-[22px] text-foreground">

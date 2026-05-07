@@ -457,7 +457,7 @@ export default function Today() {
             )
           ) : (
             <Pressable
-              className="items-center rounded-[22px] border border-border border-dashed bg-card p-8 active:scale-[0.99]"
+              className="items-center rounded-[22px] border border-border bg-card p-8 active:scale-[0.99]"
               onPress={() => router.push("/trial-select")}
             >
               <Text className="mb-2 font-heading-bold text-[26px] text-foreground">
@@ -534,7 +534,7 @@ export default function Today() {
             </Pressable>
             {reflectionsExpanded ? (
               reflectionHistory.length === 0 ? (
-                <View className="items-center rounded-[22px] border border-border border-dashed bg-card px-6 py-8">
+                <View className="items-center rounded-[22px] border border-border bg-card px-6 py-8">
                   <Text className="text-center font-medium text-[15px] text-muted-foreground leading-relaxed">
                     Your reflections will appear here.{"\n"}Take a moment to
                     reflect.
