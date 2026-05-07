@@ -23,7 +23,9 @@
           "imageWidth": 220,
           "resizeMode": "contain"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -103,8 +103,7 @@ export async function scheduleDailyReminder(time: string): Promise<boolean> {
   const hour = Number(hourStr);
   const minute = Number(minuteStr);
   if (
-    !Number.isFinite(hour) ||
-    !Number.isFinite(minute) ||
+    !(Number.isFinite(hour) && Number.isFinite(minute)) ||
     hour < 0 ||
     hour > 23 ||
     minute < 0 ||
