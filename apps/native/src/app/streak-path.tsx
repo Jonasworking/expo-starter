@@ -4,7 +4,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CaretRightBoldIcon } from "@/components/icons/ph/caret-right-bold";
 import { XIcon } from "@/components/icons/ph/x";
-import { RoninFlame } from "@/components/icons/ronin-flame";
+import { RoninFlame } from "@/components/ronin-flame";
 import { Text } from "@/components/ui/text";
 import { toDateKey, useAppState } from "@/contexts/app-state-context";
 
