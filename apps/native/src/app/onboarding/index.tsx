@@ -33,11 +33,6 @@ export default function Threshold() {
             Ronin is for those who want to become harder.{"\n"}
             Stoic. Disciplined. Quiet.
           </Text>
-
-          <Text className="mt-6 text-center font-medium text-[15px] text-white/50 leading-relaxed">
-            If you are looking for streaks and rewards,{"\n"}
-            close this now.
-          </Text>
         </View>
       </View>
 
