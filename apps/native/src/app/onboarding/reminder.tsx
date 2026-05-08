@@ -101,7 +101,7 @@ export default function Reminder() {
           style={{ opacity: submitting ? 0.6 : 1 }}
         >
           <Text className="font-semibold text-[17px] text-primary-foreground">
-            Set Reminder
+            Continue
           </Text>
         </Pressable>
       </View>

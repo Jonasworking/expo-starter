@@ -30,7 +30,8 @@ export default function Why() {
   ]);
 
   const trimmed = reason.trim();
-  const canContinue = trimmed.length >= MIN_REASON_LENGTH;
+  const canContinue = true;
+  const hasReason = trimmed.length > 0;
 
   const handleConfirm = () => {
     setUserInitialReason(trimmed);
@@ -50,7 +51,7 @@ export default function Why() {
           Why are you here?
         </Text>
         <Text className="mt-3 font-medium text-[15px] text-muted-foreground leading-relaxed">
-          Be honest. Be precise. No one will read this but you.
+          Be honest. Be precise. No one will read this but you. You can set this later.
         </Text>
 
         <View className="mt-8 rounded-[22px] border border-border bg-card px-5 py-4">
@@ -80,16 +81,20 @@ export default function Why() {
           className="text-[13px] text-muted-foreground"
           style={{ marginTop: 16, marginBottom: 16 }}
         >
-          {trimmed.length < MIN_REASON_LENGTH
-            ? `${MIN_REASON_LENGTH - trimmed.length} more characters required`
-            : `${trimmed.length} / ${MAX_REASON_LENGTH}`}
+          {hasReason ? `${trimmed.length} / ${MAX_REASON_LENGTH}` : ""}
         </Text>
 
         <View style={{ paddingBottom: Math.max(insets.bottom, 32) }}>
           <Pressable
             className="h-14 w-full items-center justify-center rounded-full bg-primary active:scale-95"
             disabled={!canContinue}
-            onPress={() => setConfirmOpen(true)}
+            onPress={() => {
+              if (hasReason) {
+                setConfirmOpen(true);
+              } else {
+                handleConfirm();
+              }
+            }}
             style={{ opacity: canContinue ? 1 : 0.4 }}
           >
             <Text className="font-semibold text-[17px] text-primary-foreground">
