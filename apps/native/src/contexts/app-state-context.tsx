@@ -117,7 +117,8 @@ type PracticeIconName =
   | "moon"
   | "bolt"
   | "pencil"
-  | "shield";
+  | "shield"
+  | "fire";
 
 type PracticeCategory = "virtue" | "body" | "mind" | "stillness";
 
@@ -141,7 +142,7 @@ const PRACTICE_POOL: readonly Practice[] = [
     id: "wisdom",
     title: "Wisdom",
     description: "Learn one thing today. Write it down.",
-    icon: "scales",
+    icon: "moon",
     embers: 15,
     category: "virtue",
   },
@@ -149,7 +150,7 @@ const PRACTICE_POOL: readonly Practice[] = [
     id: "courage",
     title: "Courage",
     description: "Do the thing you avoid.",
-    icon: "scales",
+    icon: "fire",
     embers: 25,
     category: "virtue",
   },

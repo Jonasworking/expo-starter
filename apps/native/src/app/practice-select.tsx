@@ -5,6 +5,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeftIcon } from "@/components/icons/ph/arrow-left";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
+import { FireFillIcon } from "@/components/icons/ph/fire-fill";
 import { MoonBoldIcon } from "@/components/icons/ph/moon-bold";
 import { PencilSimpleBoldIcon } from "@/components/icons/ph/pencil-simple-bold";
 import { ScalesBoldIcon } from "@/components/icons/ph/scales-bold";
@@ -31,6 +32,7 @@ const ICON_MAP: Record<PracticeIconName, IconComponent> = {
   bolt: BoltBoldIcon,
   pencil: PencilSimpleBoldIcon,
   shield: ShieldBoldIcon,
+  fire: FireFillIcon,
 };
 
 const CATEGORY_LABELS: Record<PracticeCategory, string> = {
