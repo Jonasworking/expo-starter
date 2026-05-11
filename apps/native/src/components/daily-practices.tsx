@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import type { ComponentType } from "react";
 import { Pressable, View } from "react-native";
 import { CheckBoldIcon } from "@/components/icons/ph/check-bold";
+import { FireFillIcon } from "@/components/icons/ph/fire-fill";
 import { MoonBoldIcon } from "@/components/icons/ph/moon-bold";
 import { PencilSimpleBoldIcon } from "@/components/icons/ph/pencil-simple-bold";
 import { ScalesBoldIcon } from "@/components/icons/ph/scales-bold";
@@ -28,6 +29,7 @@ const ICON_MAP: Record<PracticeIconName, IconComponent> = {
   bolt: BoltBoldIcon,
   pencil: PencilSimpleBoldIcon,
   shield: ShieldBoldIcon,
+  fire: FireFillIcon,
 };
 
 interface DailyPracticesSectionProps {
