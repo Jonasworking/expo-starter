@@ -124,6 +124,7 @@ export default {
     "ph:heart-bold",
     "ph:fire-fill",
     "ph:crown-fill",
+    "ph:laurel-wreath",
     "ph:shield-check-fill",
   ],
   collections: [],
