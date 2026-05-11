@@ -10,8 +10,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EmberPill } from "@/components/ember-pill";
 import { HeaderAvatar } from "@/components/header-avatar";
 import { FireFillIcon } from "@/components/icons/ph/fire-fill";
-import { LaurelWreathIcon } from "@/components/icons/ph/laurel-wreath";
 import { ShieldCheckFillIcon } from "@/components/icons/ph/shield-check-fill";
+import { SkullBoldIcon } from "@/components/icons/ph/skull-bold";
 import { Text } from "@/components/ui/text";
 import {
   getRankTitle,
@@ -225,7 +225,7 @@ export default function Fenrir() {
           </View>
 
           <View className="flex-1 items-center gap-2 rounded-[18px] border border-border bg-card p-4">
-            <LaurelWreathIcon className="size-6 text-foreground" />
+            <SkullBoldIcon className="size-6 text-foreground" />
             <Text className="font-bold text-[26px] text-foreground">
               {toRoman(fenrir.rank)}
             </Text>
