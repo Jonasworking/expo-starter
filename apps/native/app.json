@@ -1,16 +1,19 @@
 {
   "expo": {
+    "name": "Ronin",
+    "slug": "expo-starter",
+    "version": "1.0.0",
     "scheme": "expo-starter",
     "userInterfaceStyle": "automatic",
     "orientation": "default",
+    "icon": "./assets/images/icon.png",
     "web": {
       "bundler": "metro"
     },
-    "name": "expo-starter",
-    "slug": "expo-starter",
-    "icon": "./assets/images/icon.png",
     "ios": {
-      "icon": "./assets/images/icon.png"
+      "icon": "./assets/images/icon.png",
+      "bundleIdentifier": "com.jonasworking.ronin",
+      "supportsTablet": false
     },
     "plugins": [
       "expo-font",
@@ -36,7 +39,6 @@
       "eas": {
         "projectId": "65043c66-b141-4887-be3d-39a55cdcff38"
       }
-    },
-    "owner": "jonasworking"
+    }
   }
 }
